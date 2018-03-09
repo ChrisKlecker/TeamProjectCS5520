@@ -49,8 +49,9 @@
             .select{
                 font-size:1.3em;
             }
-            #button{
-                padding: 10px 25px;
+            
+            .buttons{
+                padding: 5px 15px;
                 line-height: 1.5;
                 border-radius: 3px;
                 color: #fff;
@@ -58,6 +59,7 @@
                 border-color: #357ebd;
                 font-family: Verdana, Helvetica, sans-serif;
                 font-weight:normal;
+                font-size:.9em;
                 
             }
 
@@ -80,27 +82,26 @@
     <h:body>
         <h:form>
         <div id="header">
-            CheckExercise: Exercise01_01.java
+            CheckExercise: #{javaExercises.exerciseSelected}.java
         </div>
         <div id="nav">
             
             <h:outputLabel>Choose a Chapter: </h:outputLabel>
-            <h:selectOneMenu class="select">
-                <f:selectItem itemValue="Chapter 1" />
-                <f:selectItem itemValue="Chapter 2" />
+            <h:selectOneMenu class="select" value="#{javaExercises.chapterSelected}">
+                <f:selectItems value="#{javaExercises.chapters}"/>
+                <f:ajax render = "exercises" />
             </h:selectOneMenu>
+
             &nbsp;&nbsp;&nbsp;&nbsp;
             <h:outputLabel>Choose an Exercise </h:outputLabel>
-            <h:selectOneMenu class="select" style="width:300px;">
-                <f:selectItem itemValue="Exercise 1" />
-                <f:selectItem itemValue="Exercise 2" />
-            </h:selectOneMenu>        
+            <h:selectOneMenu id="exercises" class="select" value="#{javaExercises.exerciseSelected}">
+                <f:selectItems value="#{javaExercises.exercises}"/>
+            </h:selectOneMenu>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <span id="button">Set Exercise</span>
-
+            <h:commandButton value="Set Exercise" class="buttons" />
         </div>
         <div id="main">
-            <pre id="editor">/* Paste your Exercise01_01 here and click Automatic Check.
+            <pre id="editor">/* Paste your #{javaExercises.exerciseSelected} here and click Automatic Check.
 For all programming projects, the numbers should be double 
 unless it is explicitly stated as integer.
 If you get a java.util.InputMismatchException error, check if 
@@ -108,9 +109,8 @@ your code used input.readInt(), but it should be input.readDouble().
 For integers, use int unless it is explicitly stated as long. */</pre>
         </div>
         <div id="mainbuttons">
-            
-            <span id="button">Compile/Run</span>
-            <span id="button">Automatic Check</span>
+            <h:commandButton value="Compile/Run" class="buttons" action = "#{javaExercises.compileRun()}"/> &nbsp;
+            <h:commandButton value="Automatic Check" class="buttons" action = "#{javaExercises.autoMaticCheck()}" /> 
         </div>
         <div id="output">
         <span class="highlight">We recommend that you use this tool to test the code. If your code is wrong, the tool will display your output and the correct output so to help you debug the error.</span> Compile/Run is provided for your convenience to compile and run the code. The extra exercises are available for instructors. Email y.daniel.liang@gmail.com to request a copy of the extra exercises.
