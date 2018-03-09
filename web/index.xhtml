@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Java Exercises</title>
+        <style>
+            body{
+                font-size: 100%;
+                font-family: Verdana, Helvetica, sans-serif;                
+            }
+            #header{
+                background-color: goldenrod;
+                color:white;
+                border-bottom: 2px solid grey;
+                border-right: 2px solid grey;
+                font-weight: bold;
+                text-align:center;
+                padding: 3px;
+                margin: 10px;
+            }
+            #nav{
+                text-align:center;
+                border: 1px solid #f6912f;
+                padding: 10px;
+                margin: 10px;
+                font-weight: bold;
+                font-family: Verdana, Helvetica, sans-serif;
+                font-size:1.5em;
+            }
+            #main{
+                border: 2px solid #f6912f;
+                height: 300px;
+                margin:10px;
+                overflow:hidden;
+            }
+            #editor {
+                height:300px;
+                top:-12px;
+                width:100%;
+                font-size:1.3em;
+                
+            }
+            #mainbuttons{
+                margin:10px;
+                font-size:1.5em;
+            }
+            .select{
+                font-size:1.3em;
+            }
+            #button{
+                padding: 10px 25px;
+                line-height: 1.5;
+                border-radius: 3px;
+                color: #fff;
+                background-color: #428bca;
+                border-color: #357ebd;
+                font-family: Verdana, Helvetica, sans-serif;
+                font-weight:normal;
+                
+            }
+
+            #output{
+                text-align:left;
+                font-size:1.5em;
+                padding:10px;
+            }
+            span.highlight{
+                color:red;
+            }
+            
+            #footer{
+                text-align:center;
+                font-size:1.5em;
+                padding:10px;
+            }
+        </style>
+    </h:head>
+    <h:body>
+        <h:form>
+        <div id="header">
+            CheckExercise: Exercise01_01.java
+        </div>
+        <div id="nav">
+            
+            <h:outputLabel>Choose a Chapter: </h:outputLabel>
+            <h:selectOneMenu class="select">
+                <f:selectItem itemValue="Chapter 1" />
+                <f:selectItem itemValue="Chapter 2" />
+            </h:selectOneMenu>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <h:outputLabel>Choose an Exercise </h:outputLabel>
+            <h:selectOneMenu class="select" style="width:300px;">
+                <f:selectItem itemValue="Exercise 1" />
+                <f:selectItem itemValue="Exercise 2" />
+            </h:selectOneMenu>        
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span id="button">Set Exercise</span>
+
+        </div>
+        <div id="main">
+            <pre id="editor">/* Paste your Exercise01_01 here and click Automatic Check.
+For all programming projects, the numbers should be double 
+unless it is explicitly stated as integer.
+If you get a java.util.InputMismatchException error, check if 
+your code used input.readInt(), but it should be input.readDouble().
+For integers, use int unless it is explicitly stated as long. */</pre>
+        </div>
+        <div id="mainbuttons">
+            
+            <span id="button">Compile/Run</span>
+            <span id="button">Automatic Check</span>
+        </div>
+        <div id="output">
+        <span class="highlight">We recommend that you use this tool to test the code. If your code is wrong, the tool will display your output and the correct output so to help you debug the error.</span> Compile/Run is provided for your convenience to compile and run the code. The extra exercises are available for instructors. Email y.daniel.liang@gmail.com to request a copy of the extra exercises.
+        </div>
+            <p />
+        <div id="footer">
+        Please report errors to Dr. Liang
+        </div>
+        </h:form>
+        <script src="src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+        <script>
+            var editor = ace.edit("editor");
+            editor.setTheme("ace/theme/chrome");
+            editor.session.setMode("ace/mode/javascript");
+        </script>        
+    </h:body>
+</html>
+
