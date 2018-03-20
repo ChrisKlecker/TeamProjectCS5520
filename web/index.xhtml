@@ -37,10 +37,10 @@
             }
             #editor {
                 height:300px;
-                top:-12px;
-                width:100%;
+                width:auto;
                 font-size:1.3em;
-                
+                border: 2px solid #f6912f;
+                margin: 10px;
             }
             #mainbuttons{
                 margin:10px;
@@ -66,8 +66,17 @@
             #output{
                 text-align:left;
                 font-size:1.5em;
-                padding:10px;
             }
+            
+            .recommend{
+                display:block;
+                width:100%;
+            }
+            
+            .recommendHidden{
+                display:none;
+            }
+            
             span.highlight{
                 color:red;
             }
@@ -77,55 +86,106 @@
                 font-size:1.5em;
                 padding:10px;
             }
+            .outputresult{
+                display:block;
+                padding: 5px 10px;
+                margin:10px;
+                font-family:"courier new", courier, monospace;
+                border:1px solid #357ebd;
+                
+            }
+            .outputresultHidden{
+                display:none;
+                font-family:"courier new", courier, monospace;
+                width:100%;
+                border:1px solid black;
+                
+            }
         </style>
+ 
     </h:head>
     <h:body>
-        <h:form>
-        <div id="header">
-            CheckExercise: #{javaExercises.exerciseSelected}.java
-        </div>
-        <div id="nav">
+        <h:form id="gradeForm">
+            <div id="header">
+                CheckExercise: #{javaExercises.exerciseSelected}.java
+            </div>
             
-            <h:outputLabel>Choose a Chapter: </h:outputLabel>
-            <h:selectOneMenu class="select" value="#{javaExercises.chapterSelected}">
-                <f:selectItems value="#{javaExercises.chapters}"/>
-                <f:ajax render = "exercises" />
-            </h:selectOneMenu>
+            <div id="nav">
+                <h:outputLabel>Choose a Chapter: </h:outputLabel>
+                <h:selectOneMenu class="select" value="#{javaExercises.chapterSelected}">
+                    <f:selectItems value="#{javaExercises.chapters}"/>
+                    <f:ajax render = "exercises" />
+                </h:selectOneMenu>
 
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <h:outputLabel>Choose an Exercise </h:outputLabel>
-            <h:selectOneMenu id="exercises" class="select" value="#{javaExercises.exerciseSelected}">
-                <f:selectItems value="#{javaExercises.exercises}"/>
-            </h:selectOneMenu>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <h:commandButton value="Set Exercise" class="buttons" />
-        </div>
-        <div id="main">
-            <pre id="editor">/* Paste your #{javaExercises.exerciseSelected} here and click Automatic Check.
-For all programming projects, the numbers should be double 
-unless it is explicitly stated as integer.
-If you get a java.util.InputMismatchException error, check if 
-your code used input.readInt(), but it should be input.readDouble().
-For integers, use int unless it is explicitly stated as long. */</pre>
-        </div>
-        <div id="mainbuttons">
-            <h:commandButton value="Compile/Run" class="buttons" action = "#{javaExercises.compileRun()}"/> &nbsp;
-            <h:commandButton value="Automatic Check" class="buttons" action = "#{javaExercises.autoMaticCheck()}" /> 
-        </div>
-        <div id="output">
-        <span class="highlight">We recommend that you use this tool to test the code. If your code is wrong, the tool will display your output and the correct output so to help you debug the error.</span> Compile/Run is provided for your convenience to compile and run the code. The extra exercises are available for instructors. Email y.daniel.liang@gmail.com to request a copy of the extra exercises.
-        </div>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <h:outputLabel>Choose an Exercise </h:outputLabel>
+                <h:selectOneMenu id="exercises" class="select" value="#{javaExercises.exerciseSelected}">
+                    <f:selectItems value="#{javaExercises.exercises}"/>
+                </h:selectOneMenu>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <h:commandButton value="Set Exercise" class="buttons" />
+            </div>
+            
+            <div id="editor">#{javaExercises.codeString}</div>
+       
+            
+            <div id="mainbuttons">
+                <h:commandButton value="Compile/Run" class="buttons" action = "#{javaExercises.compileRun()}"/> 
+                &nbsp;
+                <h:commandButton value="Automatic Check" class="buttons" action = "#{javaExercises.autoMaticCheck()}" /> 
+            </div>
+            
+            <div id="output">
+                <div class="#{javaExercises.recommendClass}">
+                    <span class="highlight">
+                           We recommend that you use this tool to test the code. 
+                           If your code is wrong, the tool will display your output 
+                           and the correct output so to help you debug the error.
+                    </span> 
+                    <span>
+                        Compile/Run is provided for your convenience to compile and run 
+                        the code. The extra exercises are available for instructors. 
+                        Email y.daniel.liang@gmail.com to request a copy of the extra 
+                        exercises.
+                    </span>
+                </div>
+                <div class="#{javaExercises.outputResultClass}">
+                    <h:outputText value="#{javaExercises.errorString}" escape="false"/>
+                </div>
+            </div>
             <p />
-        <div id="footer">
-        Please report errors to Dr. Liang
-        </div>
+            <div id="footer">
+                Please report errors to Dr. Liang
+            </div>
+            <h:inputTextarea id="sourceInputTextarea" rendered="true" required="true" value="#{javaExercises.codeString}" style="visibility: hidden;"></h:inputTextarea>
         </h:form>
-        <script src="src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
-        <script>
+        
+       <script type='text/javascript' src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
+       <script type='text/javascript' src="https://code.jquery.com/jquery-2.0.2.js"></script>
+        <script type='text/javascript'>
+
+        $(function () {
+
+            var textarea = $('#gradeForm\\:sourceInputTextarea');
             var editor = ace.edit("editor");
             editor.setTheme("ace/theme/chrome");
-            editor.session.setMode("ace/mode/javascript");
-        </script>        
+            editor.getSession().setMode("ace/mode/java");
+            editor.getSession().setTabSize(2);
+            editor.getSession().on('change', function () {
+                textarea.val(editor.getSession().getValue());
+            });
+
+            textarea.val(editor.getSession().getValue());
+            // Editor for result, just for display
+
+            var editorForResult = ace.edit("editorForResult");
+            editorForResult.setTheme("ace/theme/chrome");
+            editorForResult.getSession().setMode("ace/mode/c");
+            editorForResult.renderer.setShowGutter(false);
+            editorForResult.setReadOnly(true);
+        });
+
+    </script>
     </h:body>
 </html>
 

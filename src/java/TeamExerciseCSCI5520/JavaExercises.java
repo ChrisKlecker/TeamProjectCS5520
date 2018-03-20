@@ -6,18 +6,19 @@
 package TeamExerciseCSCI5520;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ValueChangeEvent;
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -37,6 +38,43 @@ public class JavaExercises implements Serializable {
     private String ChapterSelected;
     private String DataFile;
     private String Comment;
+    private String ErrorString;
+    private String InputString;
+    private String RecommendClass;
+    private String OutputResultClass;
+    private String CodeString;
+    
+    public String getRecommendClass() {
+        return RecommendClass;
+    }
+
+    public void setRecommendClass(String recommendClass) {
+        this.RecommendClass = recommendClass;
+    }
+
+    public String getOutputResultClass() {
+        return OutputResultClass;
+    }
+
+    public void setOutputResultClass(String OutputResultClass) {
+        this.OutputResultClass = OutputResultClass;
+    }
+
+    public String getErrorString() {
+        return ErrorString;
+    }
+
+    public void setErrorString(String ErrorString) {
+        this.ErrorString = ErrorString;
+    }
+
+    public String getInputString() {
+        return InputString;
+    }
+
+    public void setInputString(String InputString) {
+        this.InputString = InputString;
+    }
 
     public ArrayList<String> getAllExercises() {
         return AllExercises;
@@ -102,8 +140,16 @@ public class JavaExercises implements Serializable {
         
         this.ExerciseSelected = ExerciseSelected;
     }
+
+    public String getCodeString() {
+        return CodeString;
+    }
+
+    public void setCodeString(String CodeString) {
+        this.CodeString = CodeString;
+    }
    
-   
+    
     public JavaExercises() throws IOException {
         ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         String realPath     = ctx.getRealPath("/");
@@ -114,7 +160,18 @@ public class JavaExercises implements Serializable {
         AllExercises        = new ArrayList<>();
         ExerciseSelected    = "Exercise01_01";
         ChapterSelected     = "Chapter 1";
+        ErrorString         = "";
+        InputString         = "";
+        RecommendClass      ="recommend";
+        OutputResultClass   ="outputresultHidden";
 
+        CodeString          = "/*Paste your "+ExerciseSelected+" here and click Automatic Check.\n" +
+                              "For all programming projects, the numbers should be double\n" +
+                              "unless it is explicitly stated as integer.\n" +
+                              "If you get a java.util.InputMismatchException error, check if\n" +
+                              "your code used input.readInt(), but it should be input.readDouble().\n" +
+                              "For integers, use int unless it is explicitly stated as long. */";
+        
         Initialize();
     }
     
@@ -155,8 +212,75 @@ public class JavaExercises implements Serializable {
         }
     }
     
-    public void CompileRun(){
+    public void compileRun() throws IOException{
+                
+        File temp = new File(ExerciseSelected+".java");
+ 
+        String tempStr = temp.getAbsolutePath();
+        temp.deleteOnExit();
+
+        BufferedWriter bw = new BufferedWriter(new FileWriter(tempStr));
+        String x = getCodeString();
+        bw.write(x);
+        bw.close();
+
+        String command[] = {"javac",tempStr};
+        ProcessBuilder pb = new ProcessBuilder(command);  //We can add arguments like a string formatter
+
+        Process p = pb.start();  
+
+        //if( p.exitValue() == 0 ){
+
+        //}
         
+        if( p.getErrorStream().read() != -1 ){
+            ErrorString = ReturnMessage(p.getErrorStream()).toString();
+        }
+        if( p.getInputStream().read() != -1 ){
+            InputString = ReturnMessage(p.getInputStream()).toString();
+        }
+        else{
+            StringBuffer sb = new StringBuffer();
+            sb.append("<pre>command>javac "+ExerciseSelected+".java<br>");
+            sb.append("Compiled Successful");
+            sb.append("<br>command></pre>");
+            RecommendClass      ="recommendHidden";
+            OutputResultClass   ="outputresult";
+            ErrorString = sb.toString();
+        }
+            
+        p.destroy();
+                
+    }
+    
+    public StringBuffer ReturnMessage(InputStream I) throws IOException{
+        
+        int count = 0;
+        StringBuffer sb = new StringBuffer();
+        sb.append("<pre>command>javac "+ExerciseSelected+".java<br>");
+        if(I != null){
+            BufferedReader in = new BufferedReader(new InputStreamReader(I));
+            String line = null;
+            while((line = in.readLine()) != null ){
+                if(count == 0){
+                    
+                    String errorLine = line.split(".java")[1];
+                    sb.append(ExerciseSelected+".java"+errorLine);
+                }
+                else
+                    sb.append(line);
+                
+                sb.append("<br>");
+                count++;
+            }
+            in.close();
+        }
+        sb.append("<br>command></pre>");
+
+        RecommendClass      ="recommendHidden";
+        OutputResultClass   ="outputresult";
+
+        return sb;
     }
     
     public void AutomaticCheck(){
