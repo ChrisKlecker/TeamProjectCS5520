@@ -215,57 +215,82 @@ public class JavaExercises implements Serializable {
     public void compileRun() throws IOException{
                 
         File temp = new File(ExerciseSelected+".java");
- 
-        String tempStr = temp.getAbsolutePath();
         temp.deleteOnExit();
 
-        BufferedWriter bw = new BufferedWriter(new FileWriter(tempStr));
-        String x = getCodeString();
+        String tempStr      = temp.getAbsolutePath();
+        BufferedWriter bw   = new BufferedWriter(new FileWriter(tempStr));
+        String x            = getCodeString();
         bw.write(x);
         bw.close();
 
-        String command[] = {"javac",tempStr};
-        ProcessBuilder pb = new ProcessBuilder(command);  //We can add arguments like a string formatter
-
-        Process p = pb.start();  
+        String command[]    = {"javac",tempStr};
+        ProcessBuilder pb   = new ProcessBuilder(command);  //We can add arguments like a string formatter
+        Process p           = pb.start();  
 
         //if( p.exitValue() == 0 ){
-
         //}
-        
         if( p.getErrorStream().read() != -1 ){
-            ErrorString = ReturnMessage(p.getErrorStream()).toString();
+            ErrorString = ReturnMessage("javac", p.getErrorStream()).toString();
         }
-        if( p.getInputStream().read() != -1 ){
-            InputString = ReturnMessage(p.getInputStream()).toString();
+        else if( p.getInputStream().read() != -1 ){
+            InputString = ReturnMessage("javac", p.getInputStream()).toString();
         }
         else{
+            File tempClass  = new File(ExerciseSelected);
+            tempClass.deleteOnExit();
+
+            String newtempStr         = tempClass.getAbsolutePath();
+            System.getProperty(newtempStr.substring(0, newtempStr.lastIndexOf("\\")));
+
+            String runCommand[]    = {"java",ExerciseSelected}; //add input parameters
+            
+            ProcessBuilder runpb   = new ProcessBuilder(runCommand);  //We can add arguments like a string formatter
+            Process runp           = runpb.start();  
+
             StringBuffer sb = new StringBuffer();
             sb.append("<pre>command>javac "+ExerciseSelected+".java<br>");
-            sb.append("Compiled Successful");
-            sb.append("<br>command></pre>");
+            sb.append("Compiled Successful<br><br>");
+            sb.append("command> java " +ExerciseSelected+".class<br>");
+
+            if( runp.getErrorStream().read() != -1 ){
+                ErrorString = ReturnMessage("java", runp.getErrorStream()).toString();
+                sb.append(ErrorString);
+            }
+            else if( runp.getInputStream().read() != -1 ){
+                InputString = ReturnMessage("java", runp.getInputStream()).toString();
+            }
+            else
+                sb.append("Successfully run");
+            
+            sb.append("<br><br>command></pre>");
+
+            runp.destroy();
             RecommendClass      ="recommendHidden";
             OutputResultClass   ="outputresult";
-            ErrorString = sb.toString();
+           ErrorString = sb.toString();
         }
             
         p.destroy();
-                
     }
     
-    public StringBuffer ReturnMessage(InputStream I) throws IOException{
+    public StringBuffer ReturnMessage(String str, InputStream I) throws IOException{
         
         int count = 0;
         StringBuffer sb = new StringBuffer();
-        sb.append("<pre>command>javac "+ExerciseSelected+".java<br>");
+        sb.append("<pre>command>"+str+" "+ExerciseSelected+((str=="javac")?".java" : ".class")+"<br>");
         if(I != null){
             BufferedReader in = new BufferedReader(new InputStreamReader(I));
             String line = null;
             while((line = in.readLine()) != null ){
                 if(count == 0){
                     
-                    String errorLine = line.split(".java")[1];
-                    sb.append(ExerciseSelected+".java"+errorLine);
+                    String errorLine = "";
+                    if(str == "javac")
+                        errorLine = line.split(((str=="javac")?".java" : ".class"))[1];
+                    else
+                        errorLine = line;
+                    
+                    sb.append(ExerciseSelected+ ((str=="javac")?".java" : ".class") +errorLine);
                 }
                 else
                     sb.append(line);
