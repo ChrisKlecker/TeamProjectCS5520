@@ -30,7 +30,7 @@ import javax.servlet.ServletContext;
 public class JavaExercises implements Serializable {
 
     /**
-     * Creates a new instance of JavaExercises
+     * Properties of our Program
      */
     private ArrayList<String> Chapters;
     private ArrayList<String> Exercises;
@@ -41,12 +41,24 @@ public class JavaExercises implements Serializable {
     private String Comment;
     private String ErrorString;
     private String InputString;
+    private String OutputString;
     private String RecommendClass;
     private String OutputResultClass;
     private String CodeString;
-    private String Code;
     private String Input;
     private String ShowInputWindow;
+
+    /**
+     * Getters and setters for program
+     */
+    
+    public String getOutputString() {
+        return OutputString;
+    }
+
+    public void setOutputString(String OutputString) {
+        this.OutputString = OutputString;
+    }
 
     public String getShowInputWindow() {
         return ShowInputWindow;
@@ -168,48 +180,7 @@ public class JavaExercises implements Serializable {
     public void setCodeString(String CodeString) throws IOException {
         this.CodeString = CodeString;
     }
-   
-    public void SetExerciseInformation() throws IOException{
-        
-        setCodeString(GetCodeForExercise());
-        setInput(GetInputFromFiles());
-    }
-            
-    public String GetCodeForExercise() throws IOException {
-        ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
-        String realPath     = ctx.getRealPath("/");
-        setDataFile(realPath + "ags10e\\exercisedescription");
-        String CodeReturn = "";
-        
-        try{
-            String route = getDataFile() + "\\"+ ExerciseSelected;
-   
-            
-            Scanner scan = new Scanner(new File(route));
-            
-            while(scan.hasNext()){
-                 
-                String text = scan.nextLine();
-               
-                if(text.equals("This exercise can be compiled and submitted, but cannot be run and automatically graded.")){
-                    CodeReturn = "/* This exercise cannot be graded automatically becuase it may use random\n numbers, file input/output, or graphics. */";
-                }
-                else{
-                    CodeReturn = "/*Paste your "+ExerciseSelected+" here and click Automatic Check.\n" +
-                            "For all programming projects, the numbers should be double\n" +
-                            "unless it is explicitly stated as integer.\n" +
-                            "If you get a java.util.InputMismatchException error, check if\n" +
-                            "your code used input.readInt(), but it should be input.readDouble().\n" +
-                            "For integers, use int unless it is explicitly stated as long. */";
-                }
-            }
-        } catch (FileNotFoundException e){
-          //  System.out.println("The file could not be found");
-        }
-        
-        return CodeReturn;
-    }
-    
+       
     public JavaExercises() throws IOException {
         ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         String realPath     = ctx.getRealPath("/");
@@ -272,62 +243,108 @@ public class JavaExercises implements Serializable {
         }
     }
     
+    public void SetExerciseInformation() throws IOException{
+        
+        setCodeString(GetCodeForExercise());
+        setInput(GetInputFromFiles());
+    }
+
+    public String GetCodeForExercise() throws IOException {
+        ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
+        String realPath     = ctx.getRealPath("/");
+        setDataFile(realPath + "ags10e\\exercisedescription");
+        String CodeReturn = "";
+        
+        try{
+            String route = getDataFile() + "\\"+ ExerciseSelected;
+   
+            
+            Scanner scan = new Scanner(new File(route));
+            
+            while(scan.hasNext()){
+                 
+                String text = scan.nextLine();
+               
+                if(text.equals("This exercise can be compiled and submitted, but cannot be run and automatically graded.")){
+                    CodeReturn = "/* This exercise cannot be graded automatically becuase it may use random\n numbers, file input/output, or graphics. */";
+                }
+                else{
+                    CodeReturn = "/*Paste your "+ExerciseSelected+" here and click Automatic Check.\n" +
+                            "For all programming projects, the numbers should be double\n" +
+                            "unless it is explicitly stated as integer.\n" +
+                            "If you get a java.util.InputMismatchException error, check if\n" +
+                            "your code used input.readInt(), but it should be input.readDouble().\n" +
+                            "For integers, use int unless it is explicitly stated as long. */";
+                }
+            }
+        } catch (FileNotFoundException e){
+          //  System.out.println("The file could not be found");
+        }
+        
+        return CodeReturn;
+    }
+
     public void compileRun() throws IOException{
                 
-        File temp = new File(ExerciseSelected+".java");
-        temp.deleteOnExit();
+        StringBuffer consoleBuffer = new StringBuffer();
+        File JavaFile = new File(ExerciseSelected+".java");
+        JavaFile.deleteOnExit();
 
-        String tempStr      = temp.getAbsolutePath();
-        BufferedWriter bw   = new BufferedWriter(new FileWriter(tempStr));
-        String x            = getCodeString();
-        bw.write(x);
+        //Get Code written by the user and save it to a .java file
+        BufferedWriter bw   = new BufferedWriter(new FileWriter(JavaFile.getAbsolutePath()));
+        bw.write(getCodeString());
         bw.close();
 
-        String command[]    = {"javac",tempStr};
+        //get the java file and pass a javac command to ProcessBuilder
+        String command[]    = {"javac",JavaFile.getAbsolutePath()};
         ProcessBuilder pb   = new ProcessBuilder(command);  //We can add arguments like a string formatter
         Process p           = pb.start();  
+        consoleBuffer.append("<pre>command>javac "+ExerciseSelected+".java<br>");
 
-        //if( p.exitValue() == 0 ){
-        //}
-        if( p.getErrorStream().read() != -1 ){
-            ErrorString = ReturnMessage("javac", p.getErrorStream()).toString();
-        }
-        else if( p.getInputStream().read() != -1 ){
-            InputString = ReturnMessage("javac", p.getInputStream()).toString();
-        }
-        else{
-            File tempClass  = new File(ExerciseSelected);
-            tempClass.deleteOnExit();
+        //There may an error returned. 
+        ErrorString = ReturnMessage("javac", p.getErrorStream()).toString();
 
-            String newtempStr         = tempClass.getAbsolutePath();
-            System.getProperty(newtempStr.substring(0, newtempStr.lastIndexOf("\\")));
-
-            String runCommand[]    = {"java",ExerciseSelected}; //add input parameters
+        //If there is no error returned then we are good to run the java program
+        if(ErrorString.isEmpty()){
+            consoleBuffer.append("Compiled Successfully<br><br>");
             
-            ProcessBuilder runpb   = new ProcessBuilder(runCommand);  //We can add arguments like a string formatter
-            Process runp           = runpb.start();  
+            File JavaClassFile  = new File(ExerciseSelected);
+            JavaClassFile.deleteOnExit();
 
-            StringBuffer sb = new StringBuffer();
-            sb.append("<pre>command>javac "+ExerciseSelected+".java<br>");
-            sb.append("Compiled Successful<br><br>");
-            sb.append("command> java " +ExerciseSelected+".class<br>");
+            //Go to the directory of our java class file. 
+            System.getProperty(JavaClassFile.getAbsolutePath().substring(0, JavaClassFile.getAbsolutePath().lastIndexOf("\\")));
 
-            if( runp.getErrorStream().read() != -1 ){
-                ErrorString = ReturnMessage("java", runp.getErrorStream()).toString();
-                sb.append(ErrorString);
+            //Build our java command line call to pass to processbuilder. We may input so generate a command with input if that is the case
+            ProcessBuilder runpb = null;
+            if(Input != null && !Input.isEmpty()){
+                String runCommand[] = {"java",ExerciseSelected + " " + Input}; //add input parameters
+                consoleBuffer.append("command> java " +ExerciseSelected + " " + Input+"<br>");
+                runpb   = new ProcessBuilder(runCommand);  //We can add arguments like a string formatter
             }
-            else if( runp.getInputStream().read() != -1 ){
-                InputString = ReturnMessage("java", runp.getInputStream()).toString();
+            else{
+                String runCommand[] = {"java",ExerciseSelected}; //add input parameters
+                consoleBuffer.append("command> java " +ExerciseSelected+"<br>");
+                runpb   = new ProcessBuilder(runCommand);  //We can add arguments like a string formatter
+            }
+            Process runp = runpb.start();  
+
+            //We may have an error, or we may have input from the program
+            ErrorString = ReturnMessage("java", runp.getErrorStream()).toString();
+            InputString = ReturnMessage("java", runp.getInputStream()).toString();
+            
+            if(ErrorString.isEmpty()){
+                consoleBuffer.append(InputString);
+                OutputString = InputString;
             }
             else
-                sb.append("Successfully run");
+                consoleBuffer.append(ErrorString);
             
-            sb.append("<br><br>command></pre>");
+            consoleBuffer.append("<br><br>command></pre>");
 
             runp.destroy();
             RecommendClass      ="recommendHidden";
             OutputResultClass   ="outputresult";
-           ErrorString = sb.toString();
+            ErrorString = consoleBuffer.toString();
         }
             
         p.destroy();
@@ -337,39 +354,38 @@ public class JavaExercises implements Serializable {
         
         int count = 0;
         StringBuffer sb = new StringBuffer();
-        sb.append("<pre>command>"+str+" "+ExerciseSelected+((str=="javac")?".java" : ".class")+"<br>");
         if(I != null){
             BufferedReader in = new BufferedReader(new InputStreamReader(I));
-            String line = null;
-            while((line = in.readLine()) != null ){
+            for (String line; (line = in.readLine()) != null; ){
                 if(count == 0){
-                    
+                    sb.append("<pre>");
+
                     String errorLine = "";
-                    if(str == "javac")
-                        errorLine = line.split(((str=="javac")?".java" : ".class"))[1];
-                    else
+                    if(str == "javac"){
+                        errorLine = line.split(".java")[1];
+                        sb.append(ExerciseSelected+ ((str=="javac")?".java" : ".class") +errorLine);
+                    }
+                    else{
                         errorLine = line;
-                    
-                    sb.append(ExerciseSelected+ ((str=="javac")?".java" : ".class") +errorLine);
+                        sb.append(errorLine);
+                    }
                 }
-                else
+                else{
+                    sb.append("<br>");
                     sb.append(line);
-                
-                sb.append("<br>");
+                }
                 count++;
             }
             in.close();
         }
-        sb.append("<br>command></pre>");
+        if(count>0)
+            sb.append("</pre>");
+
 
         RecommendClass      ="recommendHidden";
         OutputResultClass   ="outputresult";
 
         return sb;
-    }
-    
-    public void AutomaticCheck(){
-        
     }
     
     public String GetInputFromFiles() throws FileNotFoundException{
@@ -397,4 +413,8 @@ public class JavaExercises implements Serializable {
         setShowInputWindow("display:none;");
         return "";
     }
+    
+    public void AutomaticCheck(){
+        
+    }    
 }
