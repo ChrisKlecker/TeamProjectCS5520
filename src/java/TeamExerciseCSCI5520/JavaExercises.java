@@ -317,7 +317,14 @@ public class JavaExercises implements Serializable {
             //Build our java command line call to pass to processbuilder. We may input so generate a command with input if that is the case
             ProcessBuilder runpb = null;
             if(Input != null && !Input.isEmpty()){
-                String runCommand[] = {"java",ExerciseSelected + " " + Input}; //add input parameters
+                ArrayList<String> runCommand = new ArrayList<>();
+                runCommand.add("java");
+                runCommand.add(ExerciseSelected);
+                String[] inputString = Input.split(" ");
+                for(int i=0; i<inputString.length; i++){
+                    runCommand.add(inputString[i]);
+                }
+                                
                 consoleBuffer.append("command> java " +ExerciseSelected + " " + Input+"<br>");
                 runpb   = new ProcessBuilder(runCommand);  //We can add arguments like a string formatter
             }
