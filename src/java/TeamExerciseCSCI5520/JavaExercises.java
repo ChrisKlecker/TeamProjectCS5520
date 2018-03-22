@@ -45,11 +45,24 @@ public class JavaExercises implements Serializable {
     private String OutputResultClass;
     private String CodeString;
     private String Code;
-    boolean visible;
-    private String file;
-    private String input;
-    private String output;
-       Scanner scan;
+    private String Input;
+    private String ShowInputWindow;
+
+    public String getShowInputWindow() {
+        return ShowInputWindow;
+    }
+
+    public void setShowInputWindow(String ShowInputWindow) {
+        this.ShowInputWindow = ShowInputWindow;
+    }
+
+    public String getInput() {
+        return Input;
+    }
+
+    public void setInput(String Input) throws FileNotFoundException {
+        this.Input = Input;
+    }
     
     public String getRecommendClass() {
         return RecommendClass;
@@ -152,62 +165,55 @@ public class JavaExercises implements Serializable {
         return CodeString;
     }
 
-    public void setCodeString(String CodeString) {
+    public void setCodeString(String CodeString) throws IOException {
         this.CodeString = CodeString;
     }
    
-    
-    public String code() throws IOException {
+    public void SetExerciseInformation() throws IOException{
+        
+        setCodeString(GetCodeForExercise());
+        setInput(GetInputFromFiles());
+    }
+            
+    public String GetCodeForExercise() throws IOException {
         ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         String realPath     = ctx.getRealPath("/");
-        setDataFile(realPath + "ags10e/exercisedescription");
-        String path = "C:\\ags10e\\exercisedescription\\"; 
-        Chapters            = getChapters();
-        Exercises           = getExercises();
-        AllExercises        = getAllExercises();
-        ExerciseSelected    = getExerciseSelected();
-        ChapterSelected     = getChapterSelected();
-        ErrorString         = getErrorString();
-        InputString         = getInputString();
-        RecommendClass      = getRecommendClass();
-        OutputResultClass   = getOutputResultClass();
- 
-try{
+        setDataFile(realPath + "ags10e\\exercisedescription");
+        String CodeReturn = "";
         
-            
-               
-              
-        String route = path + ExerciseSelected;
+        try{
+            String route = getDataFile() + "\\"+ ExerciseSelected;
    
-            scan = new Scanner(new File(route));
             
-             while(scan.hasNext()){
+            Scanner scan = new Scanner(new File(route));
+            
+            while(scan.hasNext()){
                  
-                 String text = scan.nextLine();
+                String text = scan.nextLine();
                
-           if(text.equals("This exercise can be compiled and submitted, but cannot be run and automatically graded.")){
-             Code         =   "/* This exercise cannot be graded automatically becuase it may use random\n" + 
- "numbers, file input/output, or graphics. */";
-           }
-           else{
-               Code       = "/*Paste your "+ExerciseSelected+" here and click Automatic Check.\n" +
-                              "For all programming projects, the numbers should be double\n" +
-                              "unless it is explicitly stated as integer.\n" +
-                              "If you get a java.util.InputMismatchException error, check if\n" +
-                              "your code used input.readInt(), but it should be input.readDouble().\n" +
-                              "For integers, use int unless it is explicitly stated as long. */";
-           }
-           
-        }
+                if(text.equals("This exercise can be compiled and submitted, but cannot be run and automatically graded.")){
+                    CodeReturn = "/* This exercise cannot be graded automatically becuase it may use random\n numbers, file input/output, or graphics. */";
+                }
+                else{
+                    CodeReturn = "/*Paste your "+ExerciseSelected+" here and click Automatic Check.\n" +
+                            "For all programming projects, the numbers should be double\n" +
+                            "unless it is explicitly stated as integer.\n" +
+                            "If you get a java.util.InputMismatchException error, check if\n" +
+                            "your code used input.readInt(), but it should be input.readDouble().\n" +
+                            "For integers, use int unless it is explicitly stated as long. */";
+                }
+            }
         } catch (FileNotFoundException e){
           //  System.out.println("The file could not be found");
         }
-        return Code;
+        
+        return CodeReturn;
     }
-     public JavaExercises() throws IOException {
+    
+    public JavaExercises() throws IOException {
         ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         String realPath     = ctx.getRealPath("/");
-        setDataFile(realPath + "ags10e/exercisedescription");
+        setDataFile(realPath + "ags10e\\exercisedescription");
         
         Chapters            = new ArrayList<>();
         Exercises           = new ArrayList<>();
@@ -218,7 +224,6 @@ try{
         InputString         = "";
         RecommendClass      ="recommend";
         OutputResultClass   ="outputresultHidden";
-
         CodeString          = "/*Paste your "+ExerciseSelected+" here and click Automatic Check.\n" +
                               "For all programming projects, the numbers should be double\n" +
                               "unless it is explicitly stated as integer.\n" +
@@ -226,6 +231,7 @@ try{
                               "your code used input.readInt(), but it should be input.readDouble().\n" +
                               "For integers, use int unless it is explicitly stated as long. */";
         
+        ShowInputWindow = "display:none;";
         Initialize();
     }
     
@@ -361,70 +367,34 @@ try{
 
         return sb;
     }
-
-    public boolean show(){
     
-    return visible=true;
-    }
-    public boolean hide(){
-        return visible=false;
-        
-    }
-
-    public String getCode() {
-        return Code;
-    }
-
-    public void setCode(String Code) {
-        this.Code = Code;
-    }
-
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-    }
     public void AutomaticCheck(){
         
     }
-    public String display(){
+    
+    public String GetInputFromFiles() throws FileNotFoundException{
       
-	String path = "C:\\ags10e\\gradeexercise\\"; 
-      file=  ExerciseSelected+"a.input";
-      String folder = path+file; 
-                 File f = new File(folder); 
-                  if(f.exists() && !f.isDirectory()) { 
-         
-       show();
-       try{
-         //    for (int i=0; i<5; i++){
-                 char letter = 'a';
-                 letter = (char)(((int) letter) );
-               
-             String ExerciseOutput = ExerciseSelected+letter;
-              
-        String route = path +ExerciseOutput+".input";
-   
-            scan = new Scanner(new File(route));
+        
+        ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
+        String realPath     = ctx.getRealPath("/");
+        setDataFile(realPath + "ags10e\\gradeexercise");
+
+        File f                  = new File(getDataFile());
+        File[] fList            = f.listFiles(); 
+        
+        for (File file : fList){
+            String FileName = file.getName();
+            if(FileName.contains(ExerciseSelected) == true && FileName.contains("input") == true){
+                Scanner scan = new Scanner(new File(getDataFile() + "\\" + FileName));
             
-             while(scan.hasNext()){
-                  input= scan.nextLine();  //output = output.replace(".", "");
-                         
-         
-           
+                setShowInputWindow("display:block;");
+                
+                while(scan.hasNext()){
+                    return scan.nextLine();
+                }
+            }
         }
-          //   }
-        } catch (FileNotFoundException e){
-         
-        }
-                  }
-      else{
-           hide();
-           input ="";
-      }
-                 
-          return input;      
+        setShowInputWindow("display:none;");
+        return "";
     }
 }

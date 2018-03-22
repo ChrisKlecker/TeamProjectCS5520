@@ -101,6 +101,17 @@
                 border:1px solid black;
                 
             }
+            #inputDiv{
+                font-size:1.3em;
+                margin: 1px 10px;
+            }
+            
+            #innerInputDiv{
+                width:auto;
+                border: 2px solid #f6912f;
+                height:60px; 
+                background-color: white; 
+            }
         </style>
  
     </h:head>
@@ -123,14 +134,19 @@
                     <f:selectItems value="#{javaExercises.exercises}"/>
                 </h:selectOneMenu>
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <h:commandButton value="Set Exercise" class="buttons" />
+                <h:commandButton value="Set Exercise" class="buttons" action = "#{javaExercises.SetExerciseInformation()}" />
             </div>
             
-            <div id="editor">#{javaExercises.code()}</div>
-            <tr>
-<td><label style="font-weight: bold; font-family: times; width:100%; margin: 0 auto;">Enter input data for the program (Sample data provided below. You may modify it.)</label></td>
-</tr>
-       <div id="editor" style="width:250px; font-weight: normal; margin-top: 1px;height:60px; background-color: white; border: 1px solid #f6912f; font-size: 96%;height:60px; width:100%; margin: 0 auto;">#{javaExercises.display()}</div>
+            <div id="editor">#{javaExercises.codeString}</div>
+                        
+            <div id="inputDiv" style="#{javaExercises.showInputWindow}">
+                <label style="font-weight: bold; font-family: times; width:100%; margin: 0 auto;">
+                    Enter input data for the program (Sample data provided below. You may modify it.)
+                </label>
+                <div id="innerInputDiv" style="#{javaExercises.showInputWindow}">
+                    #{javaExercises.input}
+                </div>
+            </div>
             
             <div id="mainbuttons">
                 <h:commandButton value="Compile/Run" class="buttons" action = "#{javaExercises.compileRun()}"/> 
