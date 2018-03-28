@@ -112,6 +112,11 @@
                 height:60px; 
                 background-color: white; 
             }
+            
+            #automaticCheck{
+                display:none;
+            }
+            
         </style>
  
     </h:head>
@@ -151,7 +156,7 @@
             <div id="mainbuttons">
                 <h:commandButton value="Compile/Run" class="buttons" action = "#{javaExercises.compileRun()}"/> 
                 &nbsp;
-                <h:commandButton value="Automatic Check" class="buttons" action = "#{javaExercises.autoMaticCheck()}" /> 
+                <h:commandButton value="Automatic Check" class="buttons" action = "#{javaExercises.automaticCheck()}" /> 
             </div>
             
             <div id="output">
@@ -173,14 +178,19 @@
                 </div>
             </div>
             <p />
+            <div id="automaticCheck">
+                <div class="input"></div>
+                <div class="output"></div>
+                <div class="errors"></div>
+            </div>
             <div id="footer">
                 Please report errors to Dr. Liang
             </div>
             <h:inputTextarea id="sourceInputTextarea" rendered="true" required="true" value="#{javaExercises.codeString}" style="visibility: hidden;"></h:inputTextarea>
         </h:form>
         
-       <script type='text/javascript' src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
-       <script type='text/javascript' src="https://code.jquery.com/jquery-2.0.2.js"></script>
+        <script type='text/javascript' src="//cdnjs.cloudflare.com/ajax/libs/ace/1.1.3/ace.js"></script>
+        <script type='text/javascript' src="https://code.jquery.com/jquery-2.0.2.js"></script>
         <script type='text/javascript'>
 
         $(function () {

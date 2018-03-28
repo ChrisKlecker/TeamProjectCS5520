@@ -27,6 +27,7 @@ import javax.servlet.ServletContext;
  */
 @Named(value = "javaExercises")
 @SessionScoped
+
 public class JavaExercises implements Serializable {
 
     /**
@@ -206,6 +207,78 @@ public class JavaExercises implements Serializable {
         Initialize();
     }
     
+public class Output{
+        private String m_ErrorString;
+        private String m_OutputString;
+        private String m_InputString;
+        private String m_SourceDirectory;
+        private String m_FullPath;
+        
+        public Output(){
+            this.m_ErrorString = "";
+            this.m_OutputString = "";
+            this.m_InputString = "";
+            this.m_SourceDirectory = "";
+            this.m_FullPath = "";
+        }
+
+        public Output(String ErrorString, String OutputString){
+            this.m_ErrorString = ErrorString;
+            this.m_OutputString = OutputString;
+            this.m_InputString = "";
+            this.m_SourceDirectory = "";
+            this.m_FullPath = "";
+        }
+
+        public Output(String ErrorString, String OutputString, String InputString){
+            this.m_ErrorString = ErrorString;
+            this.m_OutputString = OutputString;
+            this.m_InputString = InputString;
+            this.m_SourceDirectory = "";
+            this.m_FullPath = "";
+        }
+        
+        public String getInputString() {
+            return m_InputString;
+        }
+
+        public void setInputString(String m_InputString) {
+            this.m_InputString = m_InputString;
+        }
+        
+        public String getErrorString() {
+            return m_ErrorString;
+        }
+
+        public void setErrorString(String ErrorString) {
+            this.m_ErrorString = ErrorString;
+        }
+
+        public String getOutputString() {
+            return m_OutputString;
+        }
+
+        public void setOutputString(String OutputString) {
+            this.m_OutputString = OutputString;
+        }
+
+        public String getSourceDirectory() {
+            return m_SourceDirectory;
+        }
+
+        public void setSourceDirectory(String m_SourceDirectory) {
+            this.m_SourceDirectory = m_SourceDirectory;
+        }
+
+        public String getFullPath() {
+            return m_FullPath;
+        }
+
+        public void setFullPath(String m_FullPath) {
+            this.m_FullPath = m_FullPath;
+        }        
+    }
+
     public void Initialize() throws FileNotFoundException, IOException{
         
         File f                  = new File(getDataFile());
@@ -257,8 +330,6 @@ public class JavaExercises implements Serializable {
         
         try{
             String route = getDataFile() + "\\"+ ExerciseSelected;
-   
-            
             Scanner scan = new Scanner(new File(route));
             
             while(scan.hasNext()){
@@ -284,117 +355,6 @@ public class JavaExercises implements Serializable {
         return CodeReturn;
     }
 
-    public void compileRun() throws IOException{
-                
-        StringBuffer consoleBuffer = new StringBuffer();
-        File JavaFile = new File(ExerciseSelected+".java");
-        JavaFile.deleteOnExit();
-
-        //Get Code written by the user and save it to a .java file
-        BufferedWriter bw   = new BufferedWriter(new FileWriter(JavaFile.getAbsolutePath()));
-        bw.write(getCodeString());
-        bw.close();
-
-        //get the java file and pass a javac command to ProcessBuilder
-        String command[]    = {"javac",JavaFile.getAbsolutePath()};
-        ProcessBuilder pb   = new ProcessBuilder(command);  //We can add arguments like a string formatter
-        Process p           = pb.start();  
-        consoleBuffer.append("<pre>command>javac "+ExerciseSelected+".java<br>");
-
-        //There may an error returned. 
-        ErrorString = ReturnMessage("javac", p.getErrorStream()).toString();
-
-        //If there is no error returned then we are good to run the java program
-        if(ErrorString.isEmpty()){
-            consoleBuffer.append("Compiled Successfully<br><br>");
-            
-            File JavaClassFile  = new File(ExerciseSelected);
-            JavaClassFile.deleteOnExit();
-
-            //Go to the directory of our java class file. 
-            System.getProperty(JavaClassFile.getAbsolutePath().substring(0, JavaClassFile.getAbsolutePath().lastIndexOf("\\")));
-
-            //Build our java command line call to pass to processbuilder. We may input so generate a command with input if that is the case
-            ProcessBuilder runpb = null;
-            if(Input != null && !Input.isEmpty()){
-                ArrayList<String> runCommand = new ArrayList<>();
-                runCommand.add("java");
-                runCommand.add(ExerciseSelected);
-                String[] inputString = Input.split(" ");
-                for(int i=0; i<inputString.length; i++){
-                    runCommand.add(inputString[i]);
-                }
-                                
-                consoleBuffer.append("command> java " +ExerciseSelected + " " + Input+"<br>");
-                runpb   = new ProcessBuilder(runCommand);  //We can add arguments like a string formatter
-            }
-            else{
-                String runCommand[] = {"java",ExerciseSelected}; //add input parameters
-                consoleBuffer.append("command> java " +ExerciseSelected+"<br>");
-                runpb   = new ProcessBuilder(runCommand);  //We can add arguments like a string formatter
-            }
-            Process runp = runpb.start();  
-
-            //We may have an error, or we may have input from the program
-            ErrorString = ReturnMessage("java", runp.getErrorStream()).toString();
-            InputString = ReturnMessage("java", runp.getInputStream()).toString();
-            
-            if(ErrorString.isEmpty()){
-                consoleBuffer.append(InputString);
-                OutputString = InputString;
-            }
-            else
-                consoleBuffer.append(ErrorString);
-            
-            consoleBuffer.append("<br><br>command></pre>");
-
-            runp.destroy();
-            RecommendClass      ="recommendHidden";
-            OutputResultClass   ="outputresult";
-            ErrorString = consoleBuffer.toString();
-        }
-            
-        p.destroy();
-    }
-    
-    public StringBuffer ReturnMessage(String str, InputStream I) throws IOException{
-        
-        int count = 0;
-        StringBuffer sb = new StringBuffer();
-        if(I != null){
-            BufferedReader in = new BufferedReader(new InputStreamReader(I));
-            for (String line; (line = in.readLine()) != null; ){
-                if(count == 0){
-                    sb.append("<pre>");
-
-                    String errorLine = "";
-                    if(str == "javac"){
-                        errorLine = line.split(".java")[1];
-                        sb.append(ExerciseSelected+ ((str=="javac")?".java" : ".class") +errorLine);
-                    }
-                    else{
-                        errorLine = line;
-                        sb.append(errorLine);
-                    }
-                }
-                else{
-                    sb.append("<br>");
-                    sb.append(line);
-                }
-                count++;
-            }
-            in.close();
-        }
-        if(count>0)
-            sb.append("</pre>");
-
-
-        RecommendClass      ="recommendHidden";
-        OutputResultClass   ="outputresult";
-
-        return sb;
-    }
-    
     public String GetInputFromFiles() throws FileNotFoundException{
       
         
@@ -421,7 +381,163 @@ public class JavaExercises implements Serializable {
         return "";
     }
     
-    public void AutomaticCheck(){
+    public void compileRun() throws IOException{
+                
+        StringBuffer consoleBuffer = new StringBuffer();        
+        consoleBuffer.append("<pre>command>javac "+ExerciseSelected+".java<br>");
+
+        Output output = CompileJavaProgram(ExerciseSelected);
+
+        if(output.m_ErrorString.isEmpty()){
+            consoleBuffer.append("Compiled Successfully<br><br>");
+                        
+            if(InputString != null && !InputString.isEmpty()){
+                consoleBuffer.append("command> java " +ExerciseSelected + " " + Input+"<br>");
+                output = RunJavaProgram(Input, ExerciseSelected, output);
+            }
+            else{
+                consoleBuffer.append("command> java " +ExerciseSelected+"<br>");
+                output = RunJavaProgram("", ExerciseSelected, output);
+            }
+            
+            consoleBuffer.append( (output.getErrorString().isEmpty()) ? output.getOutputString() : output.getErrorString());
+
+        }
+        else{
+            consoleBuffer.append(output.m_ErrorString);
+        }  
         
+        consoleBuffer.append("<br>command></pre>");
+        RecommendClass      = "recommendHidden";
+        OutputResultClass   = "outputresult";
+        ErrorString         = consoleBuffer.toString();
+        OutputString        = output.m_OutputString;
+    }
+    
+    public String CreateFileWithText(String File, String Extension, String Text) throws IOException{
+        
+        try{
+            File JavaFile = new File(ExerciseSelected+"."+Extension);
+            JavaFile.deleteOnExit();
+
+            //Get Code written by the user and save it to a .java file using absolute path
+            BufferedWriter bw   = new BufferedWriter(new FileWriter(JavaFile.getAbsolutePath()));
+            bw.write(getCodeString());
+            bw.close();
+            
+            return JavaFile.getAbsolutePath();
+        }
+        catch(IOException e){
+            return "";
+        }
+    }
+    
+    public String GetSourceDirectory(String Path){
+        return Path.substring(0, Path.lastIndexOf("\\"));
+    }
+    
+    public Output CompileJavaProgram(String FileName) throws IOException{
+    
+        String JavaFilePath = CreateFileWithText(FileName, "java", getCodeString());
+        
+        if(!JavaFilePath.isEmpty()){
+    
+            ArrayList<String> Command = new ArrayList<>();
+            Command.add("javac");
+            Command.add(JavaFilePath);
+            
+            ProcessBuilder pb   = new ProcessBuilder(Command);  //We can add arguments like a string formatter
+            pb.directory(new File(GetSourceDirectory(JavaFilePath)));
+            
+            Process p           = pb.start();  
+
+            final Output result = new Output(   ReturnMessage("javac", p.getErrorStream()).toString(), 
+                                                ReturnMessage("javac", p.getInputStream()).toString());
+            result.setSourceDirectory(GetSourceDirectory(JavaFilePath));
+            result.setFullPath(JavaFilePath);
+            
+            p.destroy();        
+            return result;
+        }
+        
+        return null;
+    }
+    
+    public Output RunJavaProgram(String InputString, String ClassName, Output output) throws IOException{
+        
+        //Build our java command line call to pass to processbuilder. We may input so generate a command with input if that is the case
+        ProcessBuilder runpb = null;
+        ArrayList<String> runCommand = new ArrayList<>();
+        runCommand.add("java");
+        runCommand.add(ClassName);
+
+        if(InputString != null && !InputString.isEmpty()){
+            String[] inputString = InputString.split(" ");
+            for(int i=0; i<inputString.length; i++){
+                
+                runCommand.add(inputString[i]);
+            }
+        }
+        
+        runpb           = new ProcessBuilder(runCommand);  //We can add arguments like a string formatter
+        runpb.directory(new File(output.m_SourceDirectory));
+        Process runp    = runpb.start();  
+
+        final Output result = new Output(   GenerateHTMLFromText(ReturnMessage("java", runp.getErrorStream())).toString(), 
+                                            GenerateHTMLFromText(ReturnMessage("java", runp.getInputStream())).toString());
+
+        result.setFullPath(output.getFullPath());
+        result.setSourceDirectory(output.getSourceDirectory());
+        
+        runp.destroy();
+        
+        return result;
+    }
+        
+    public StringBuffer ReturnMessage(String str, InputStream I) throws IOException{
+        
+        StringBuffer sb = new StringBuffer();
+        if(I != null){
+            BufferedReader in = new BufferedReader(new InputStreamReader(I));
+            for (String line; (line = in.readLine()) != null; ){
+                sb.append(line);
+                sb.append(System.lineSeparator());
+            }
+            in.close();
+        }
+        return sb;
+    }
+    
+    public StringBuffer GenerateHTMLFromText(StringBuffer Text){
+        
+        
+        StringBuffer sb = new StringBuffer();
+        
+        if(Text.length() == 0)
+            return sb;
+
+        sb.append("<pre>");
+
+        String[] lines = Text.toString().split("\\n");
+        for(String s: lines){
+        
+            if(s == "javac"){
+                sb.append(ExerciseSelected+ ".java" + s.split(".java")[1]);
+            }
+            else{
+                sb.append(s);
+            }
+        }
+        
+        sb.append("</pre>");
+
+        return sb;        
+    }
+        
+    public void AutomaticCheck(){
+        //This will run compileRun() and get back the output which means you need to store output into an object. 
+        //We have the actual output from the file. 
+        //Run a compare and highlight where the objects do not match. 
+        //Print input, output and any errors. 
     }    
 }
