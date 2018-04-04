@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package TeamExerciseCSCI5520;
 
 import java.io.BufferedReader;
@@ -16,6 +11,7 @@ import java.io.InputStreamReader;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.Scanner;
 import javax.faces.context.FacesContext;
@@ -46,9 +42,17 @@ public class JavaExercises implements Serializable {
     private String RecommendClass;
     private String OutputResultClass;
     private String CodeString;
-    private String Input;
+    private String input;
     private String ShowInputWindow;
+    private String inputFile;
 
+    public String getInputFile() {
+        return inputFile;
+    }
+
+    public void setInputFile(String inputFile) {
+        this.inputFile = inputFile;
+    }
     /**
      * Getters and setters for program
      */
@@ -70,11 +74,11 @@ public class JavaExercises implements Serializable {
     }
 
     public String getInput() {
-        return Input;
+        return input;
     }
 
-    public void setInput(String Input) throws FileNotFoundException {
-        this.Input = Input;
+    public void setInput(String input) throws FileNotFoundException {
+        this.input = input;
     }
     
     public String getRecommendClass() {
@@ -317,9 +321,10 @@ public class Output{
     }
     
     public void SetExerciseInformation() throws IOException{
+          
+        CodeString=(GetCodeForExercise());
+        input=(GetInputFromFiles());
         
-        setCodeString(GetCodeForExercise());
-        setInput(GetInputFromFiles());
     }
 
     public String GetCodeForExercise() throws IOException {
@@ -354,10 +359,40 @@ public class Output{
         
         return CodeReturn;
     }
+    public String GetInputForExercise() throws IOException {
+        ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
+        String realPath     = ctx.getRealPath("/");
+        setDataFile(realPath + "ags10e\\temp");
 
-    public String GetInputFromFiles() throws FileNotFoundException{
-      
+        File f                  = new File(getDataFile());
+        File[] fList            = f.listFiles(); 
         
+        for (File file : fList){
+            String FileName = file.getName();
+            if(FileName.contains(ExerciseSelected) == true && FileName.contains("input") == true){
+                 setInputFile(getDataFile() + "\\" + FileName);    
+                Scanner scan = new Scanner(new File(getDataFile() + "\\" + FileName));
+            
+                setShowInputWindow("display:block;");
+                
+                while(scan.hasNext()){
+                    String value= scan.nextLine();
+                 if(value != null && !value.isEmpty()){
+                input = value;
+                 }
+                 else{
+                     input=getInput();
+                 }
+                 return input;
+                }
+            }
+        }
+        setShowInputWindow("display:none;");
+        return "";
+    }
+    
+
+    public String GetInputFromFiles() throws FileNotFoundException{        
         ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         String realPath     = ctx.getRealPath("/");
         setDataFile(realPath + "ags10e\\gradeexercise");
@@ -368,12 +403,20 @@ public class Output{
         for (File file : fList){
             String FileName = file.getName();
             if(FileName.contains(ExerciseSelected) == true && FileName.contains("input") == true){
+                 setInputFile(getDataFile() + "\\" + FileName);    
                 Scanner scan = new Scanner(new File(getDataFile() + "\\" + FileName));
             
                 setShowInputWindow("display:block;");
                 
                 while(scan.hasNext()){
-                    return scan.nextLine();
+                    String value= scan.nextLine();
+                 if(value != null && !value.isEmpty()){
+                input = value;
+                 }
+                 else{
+                     input=getInput();
+                 }
+                 return input;
                 }
             }
         }
@@ -382,7 +425,8 @@ public class Output{
     }
     
     public void compileRun() throws IOException{
-                
+               write(input);
+               setInput(GetInputForExercise());
         StringBuffer consoleBuffer = new StringBuffer();        
         consoleBuffer.append("<pre>command>javac "+ExerciseSelected+".java<br>");
 
@@ -391,9 +435,9 @@ public class Output{
         if(output.m_ErrorString.isEmpty()){
             consoleBuffer.append("Compiled Successfully<br><br>");
                         
-            if(InputString != null && !InputString.isEmpty()){
-                consoleBuffer.append("command> java " +ExerciseSelected + " " + Input+"<br>");
-                output = RunJavaProgram(Input, ExerciseSelected, output);
+            if(input != null && !input.isEmpty()){
+                consoleBuffer.append("command> java " +ExerciseSelected + " " + input+"<br>");
+                output = RunJavaProgram(GetInputForExercise(), ExerciseSelected, output);
             }
             else{
                 consoleBuffer.append("command> java " +ExerciseSelected+"<br>");
@@ -481,6 +525,13 @@ public class Output{
         
         runpb           = new ProcessBuilder(runCommand);  //We can add arguments like a string formatter
         runpb.directory(new File(output.m_SourceDirectory));
+        runpb.redirectErrorStream(true);
+
+        if(getInputFile() != null) {
+
+            runpb.redirectInput(Redirect.from(new File(getInputFile())));
+        }
+
         Process runp    = runpb.start();  
 
         final Output result = new Output(   GenerateHTMLFromText(ReturnMessage("java", runp.getErrorStream())).toString(), 
@@ -539,5 +590,41 @@ public class Output{
         //We have the actual output from the file. 
         //Run a compare and highlight where the objects do not match. 
         //Print input, output and any errors. 
-    }    
+    }  
+    public String write(String input){
+        FileWriter fw = null;
+        BufferedWriter bw = null;
+        String pathToWrite = "C:\\Users\\ANSA-HP\\Documents\\NetBeansProjects\\TeamProjectCS5520-master\\build\\web\\ags10e\\temp\\"+  ExerciseSelected + ".input";
+        try{
+            fw = new FileWriter(pathToWrite);
+            bw = new BufferedWriter(fw);
+         
+            bw.write(input);
+        } catch(IOException e){
+            try{
+                if (bw != null){
+                    bw.close();
+                }
+                if (fw != null){
+                    fw.close();
+                }
+            } catch(IOException x){
+                //
+            }
+            return "Error writing file:\n" + e.toString();
+        } finally{
+            try{
+                if (bw != null){
+                    bw.close();
+                }
+                if (fw != null){
+                    fw.close();
+                }
+            } catch(IOException x){
+                //
+            }
+        }
+        
+        return "File was written successfully";
+    }
 }
