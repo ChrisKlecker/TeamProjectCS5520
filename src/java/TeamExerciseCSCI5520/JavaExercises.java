@@ -8,9 +8,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -217,6 +219,7 @@ public class Output{
         private String m_InputString;
         private String m_SourceDirectory;
         private String m_FullPath;
+        private String m_HTMLOutputString;
         
         public Output(){
             this.m_ErrorString = "";
@@ -224,22 +227,24 @@ public class Output{
             this.m_InputString = "";
             this.m_SourceDirectory = "";
             this.m_FullPath = "";
+            this.m_HTMLOutputString = "";
         }
 
-        public Output(String ErrorString, String OutputString){
-            this.m_ErrorString = ErrorString;
-            this.m_OutputString = OutputString;
-            this.m_InputString = "";
-            this.m_SourceDirectory = "";
-            this.m_FullPath = "";
-        }
-
-        public Output(String ErrorString, String OutputString, String InputString){
+        public Output(String ErrorString, String OutputString, String InputString, String HTMLOutput){
             this.m_ErrorString = ErrorString;
             this.m_OutputString = OutputString;
             this.m_InputString = InputString;
             this.m_SourceDirectory = "";
             this.m_FullPath = "";
+            this.m_HTMLOutputString = HTMLOutput;
+        }
+
+        public String getM_HTMLOutputString() {
+            return m_HTMLOutputString;
+        }
+
+        public void setM_HTMLOutputString(String m_HTMLOutputString) {
+            this.m_HTMLOutputString = m_HTMLOutputString;
         }
         
         public String getInputString() {
@@ -444,7 +449,7 @@ public class Output{
                 output = RunJavaProgram("", ExerciseSelected, output);
             }
             
-            consoleBuffer.append( (output.getErrorString().isEmpty()) ? output.getOutputString() : output.getErrorString());
+            consoleBuffer.append( (output.getErrorString().isEmpty()) ? output.getM_HTMLOutputString(): output.getErrorString());
 
         }
         else{
@@ -455,7 +460,7 @@ public class Output{
         RecommendClass      = "recommendHidden";
         OutputResultClass   = "outputresult";
         ErrorString         = consoleBuffer.toString();
-        OutputString        = output.m_OutputString;
+        OutputString        = output.getM_HTMLOutputString();
     }
     
     public String CreateFileWithText(String File, String Extension, String Text) throws IOException{
@@ -496,7 +501,8 @@ public class Output{
             Process p           = pb.start();  
 
             final Output result = new Output(   ReturnMessage("javac", p.getErrorStream()).toString(), 
-                                                ReturnMessage("javac", p.getInputStream()).toString());
+                                                ReturnMessage("javac", p.getInputStream()).toString(), "", "");
+            
             result.setSourceDirectory(GetSourceDirectory(JavaFilePath));
             result.setFullPath(JavaFilePath);
             
@@ -515,13 +521,13 @@ public class Output{
         runCommand.add("java");
         runCommand.add(ClassName);
 
-        if(InputString != null && !InputString.isEmpty()){
+        /*if(InputString != null && !InputString.isEmpty()){
             String[] inputString = InputString.split(" ");
             for(int i=0; i<inputString.length; i++){
                 
                 runCommand.add(inputString[i]);
             }
-        }
+        }*/
         
         runpb           = new ProcessBuilder(runCommand);  //We can add arguments like a string formatter
         runpb.directory(new File(output.m_SourceDirectory));
@@ -534,11 +540,15 @@ public class Output{
 
         Process runp    = runpb.start();  
 
-        final Output result = new Output(   GenerateHTMLFromText(ReturnMessage("java", runp.getErrorStream())).toString(), 
-                                            GenerateHTMLFromText(ReturnMessage("java", runp.getInputStream())).toString());
-
+        String ErrorMessage = GenerateHTMLFromText(ReturnMessage("java", runp.getErrorStream())).toString();
+        StringBuffer OutputMessage = ReturnMessage("java", runp.getInputStream());
+        
+        final Output result = new Output(ErrorMessage, OutputMessage.toString(), "", GenerateHTMLFromText(OutputMessage).toString());
+        
         result.setFullPath(output.getFullPath());
         result.setSourceDirectory(output.getSourceDirectory());
+        
+        writeToOutfile(result.getOutputString());
         
         runp.destroy();
         
@@ -591,10 +601,36 @@ public class Output{
         //Run a compare and highlight where the objects do not match. 
         //Print input, output and any errors. 
     }  
+    
+    public boolean writeToOutfile(String file) throws FileNotFoundException, UnsupportedEncodingException{
+
+        try{
+            ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
+            String realPath     = ctx.getRealPath("/");
+            setDataFile(realPath + "ags10e\\temp\\" + ExerciseSelected + ".output");
+
+            PrintWriter writer = new PrintWriter(getDataFile(), "UTF-8");
+            writer.println(file);
+            writer.close();
+            return true;
+        }
+        catch(FileNotFoundException ex){
+            return false;
+        }
+        catch(UnsupportedEncodingException ex){
+            return false;
+        }
+    }
+    
     public String write(String input){
+        ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
+        String realPath     = ctx.getRealPath("/");
+        setDataFile(realPath + "ags10e\\temp\\" + ExerciseSelected + ".input");
+
+        
         FileWriter fw = null;
         BufferedWriter bw = null;
-        String pathToWrite = "C:\\Users\\ANSA-HP\\Documents\\NetBeansProjects\\TeamProjectCS5520-master\\build\\web\\ags10e\\temp\\"+  ExerciseSelected + ".input";
+        String pathToWrite = getDataFile();
         try{
             fw = new FileWriter(pathToWrite);
             bw = new BufferedWriter(fw);
