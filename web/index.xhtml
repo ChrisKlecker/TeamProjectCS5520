@@ -104,13 +104,15 @@
                 font-size:1.3em;
                 margin: 1px 10px;
             }
-            
-           
-            
-            #automaticCheck{
-                display:none;
+                       
+            .automaticChecktitles{
+                background-color:red;
+                color:white;
+                margin:0 5px;
+                padding: 5px;
+                border:1px solid black;
+                border-radius: 3px;
             }
-            
         </style>
  
     </h:head>
@@ -143,13 +145,13 @@
                     Enter input data for the program (Sample data provided below. You may modify it.)
                 </label>
        <h:inputText id="innerInputDiv"  style="#{javaExercises.showInputWindow} width:100%;
-                border: 2px solid #f6912f; font-size:30px; height:60px; background-color: white; outline: none; " value="#{javaExercises.input}"/>
+                border: 2px solid #f6912f; font-size:30px; height:60px; background-color: white; outline: none; " value="#{javaExercises.inputString}"/>
                  
                 
             </div>
             
             <div id="mainbuttons">
-                <h:commandButton value="Compile/Run" class="buttons" action = "#{javaExercises.compileRun()}"/> 
+                <h:commandButton value="Compile/Run" class="buttons" action = "#{javaExercises.compileRun(false)}"/> 
                 &nbsp;
                 <h:commandButton value="Automatic Check" class="buttons" action = "#{javaExercises.automaticCheck()}" /> 
             </div>
@@ -168,16 +170,31 @@
                         exercises.
                     </span>
                 </div>
+
                 <div class="#{javaExercises.outputResultClass}">
                     <h:outputText value="#{javaExercises.errorString}" escape="false"/>
                 </div>
             </div>
             <p />
-            <div id="automaticCheck">
-                <div class="input"></div>
-                <div class="output"></div>
-                <div class="errors"></div>
+            
+            <div style="#{javaExercises.automaticCheckAreaStyle}">
+                <span class="automaticChecktitles">Input</span>
+                <br />
+                <h:inputText class="input"  style=" #{javaExercises.inputStyle} width:100%;
+                    border: 2px solid #f6912f; font-size:30px; height:60px; background-color: white; outline: none; " value="#{javaExercises.inputString}"/>
+                <p />
+                <span class="automaticChecktitles">Expected Output</span>
+                <br />
+                <h:inputText class="expectedoutput"  style=" #{javaExercises.expectedOutputStyle} width:100%;
+                    border: 2px solid #f6912f; font-size:30px; height:60px; background-color: white; outline: none; " value="#{javaExercises.expectedOutputString}"/>
+                <p />
+                <span class="automaticChecktitles">Your Output</span>
+                <br />
+                <h:inputText class="youroutput"  style=" #{javaExercises.yourOutputStyle} width:100%; overflow:scroll;
+                    border: 2px solid #f6912f; font-size:30px; height:60px; background-color: white; " value="#{javaExercises.outputString}"/>                        
+
             </div>
+            
             <div id="footer">
                 Please report errors to Dr. Liang
             </div>
