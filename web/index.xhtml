@@ -144,16 +144,14 @@
                 <label style="font-weight: bold; font-family: times; width:100%; margin: 0 auto;">
                     Enter input data for the program (Sample data provided below. You may modify it.)
                 </label>
-       <h:inputText id="innerInputDiv"  style="#{javaExercises.showInputWindow} width:100%;
+                <h:inputText id="innerInputDiv"  style="#{javaExercises.showInputWindow} width:100%;
                 border: 2px solid #f6912f; font-size:30px; height:60px; background-color: white; outline: none; " value="#{javaExercises.inputString}"/>
-                 
-                
             </div>
             
             <div id="mainbuttons">
                 <h:commandButton value="Compile/Run" class="buttons" action = "#{javaExercises.compileRun(false)}"/> 
                 &nbsp;
-                <h:commandButton value="Automatic Check" class="buttons" action = "#{javaExercises.automaticCheck()}" /> 
+                <h:commandButton value="Automatic Check" style="#{javaExercises.automaticCheckButtonStyle}" class="buttons" action = "#{javaExercises.automaticCheck()}" /> 
             </div>
             
             <div id="output">

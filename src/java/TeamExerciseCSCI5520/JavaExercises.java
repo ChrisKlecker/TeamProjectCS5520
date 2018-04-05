@@ -57,7 +57,10 @@ public class JavaExercises implements Serializable {
     private String expectedOutputString;
     private Output output;
     private String automaticCheckAreaStyle;
-    
+    private String automaticCheckButtonStyle;
+
+    public String getAutomaticCheckButtonStyle()                    {return automaticCheckButtonStyle;}
+    public void setAutomaticCheckButtonStyle(String value)          {this.automaticCheckButtonStyle = value;}
     public String getAutomaticCheckAreaStyle()                      {return automaticCheckAreaStyle;}
     public void setAutomaticCheckAreaStyle(String value)            {this.automaticCheckAreaStyle = value;}
     public String getDataPath()                                     {return DataPath;}
@@ -133,6 +136,7 @@ public class JavaExercises implements Serializable {
         inputStyle                  = "display:block;";
         expectedOutputStyle         = "display:block;";
         yourOutputStyle             = "display:block;";
+        automaticCheckButtonStyle   = "display:inline-block;";
 
         Initialize();
     }
@@ -180,8 +184,27 @@ public class JavaExercises implements Serializable {
     
     public void SetExerciseInformation() throws IOException{
           
-        CodeString  = GetCodeForExercise();
-        InputString = GetInputForExercise().toString();
+        OutputResultClass           = "outputresultHidden";
+        RecommendClass              = "recommend";
+        ErrorString                 = "";
+        InputString                 = "";
+        ShowInputWindow             = "display:none;";
+        automaticCheckAreaStyle     = "display:none;";
+        inputStyle                  = "display:block;";
+        expectedOutputStyle         = "display:block;";
+        yourOutputStyle             = "display:block;";
+        automaticCheckButtonStyle   = "display:inline-block;";
+
+        StringBuffer sb             = GetInputForExercise();
+        CodeString                  = GetCodeForExercise();
+
+        if(sb != null && sb.length()>0){
+            ShowInputWindow = "display:block;";
+            InputString = GetInputForExercise().toString();
+        }
+        else
+            ShowInputWindow = "display:none;";
+
     }
 
     public String GetCodeForExercise() throws IOException {
@@ -208,9 +231,11 @@ public class JavaExercises implements Serializable {
     public String ReturnComment(String text){
         
         if(text.equals("This exercise can be compiled and submitted, but cannot be run and automatically graded.")){
+            automaticCheckButtonStyle   = "display:none;";
             return "/* This exercise cannot be graded automatically becuase it may use random\n numbers, file input/output, or graphics. */";
         }
         else{
+            automaticCheckButtonStyle   = "display:inline-block;";
             return "/*Paste your "+ExerciseSelected+" here and click Automatic Check.\n" +
                     "For all programming projects, the numbers should be double\n" +
                     "unless it is explicitly stated as integer.\n" +
@@ -294,10 +319,7 @@ public class JavaExercises implements Serializable {
             
             setInputString(sb.toString());
             WriteStringBufferToInputFile(sb);
-            setShowInputWindow("display:block;");
         }
-        else
-            setShowInputWindow("display:none;");
         
         if(FileCreated){
     
