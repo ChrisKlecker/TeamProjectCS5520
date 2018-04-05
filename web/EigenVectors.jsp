@@ -18,12 +18,47 @@
     </head>
     <body>
         <% 
-            EigenVectoring.ProcessRequest();
+            EigenVectoring.ProcessRequest(request);
         %>
+        <h1> P Matrix </h1>
+        <%=EigenVectoring.getGroupNodeLocal().getMValue()%>
+        <table>
+        <%
+            for(int i=0; i<EigenVectoring.getGroupNodeLocal().getP_Matrix().getColumnDimension();i++){
+        %>
+                <tr>
+        <%
+                for(int j=0; j<EigenVectoring.getGroupNodeLocal().getP_Matrix().getRowDimension();j++){
+        %>
+                    <td><%=EigenVectoring.getGroupNodeLocal().getP_Matrix().get(i, j)%></td>
+        <%
+                }
+        %>
+                </tr>
+        <%  }%>
+        </table>
+
+        <h1> B Matrix </h1>
+        <table>
+        <%
+            for(int i=0; i<EigenVectoring.getGroupNodeLocal().getB_Matrix().getColumnDimension();i++){
+        %>
+                <tr>
+        <%
+                for(int j=0; j<EigenVectoring.getGroupNodeLocal().getB_Matrix().getRowDimension();j++){
+        %>
+                    <td><%=EigenVectoring.getGroupNodeLocal().getB_Matrix().get(i, j)%></td>
+        <%
+                }
+        %>
+                </tr>
+        <%  }%>
+        </table>
+        
         <h1>Eigen Values</h1>
         <table><tr>
         <%
-            double x[] = EigenVectoring.getEigenValues();
+            double x[] = EigenVectoring.getGroupNodeLocal().getEigenValues();
             for(int i=0; i<x.length;i++){
                 %>      <td><%=x[i]%></td>
         <%
