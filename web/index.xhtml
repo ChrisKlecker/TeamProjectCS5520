@@ -145,7 +145,7 @@
                     Enter input data for the program (Sample data provided below. You may modify it.)
                 </label>
                 <h:inputText id="innerInputDiv"  style="#{javaExercises.showInputWindow} width:100%;
-                border: 2px solid #f6912f; font-size:30px; height:60px; background-color: white; outline: none; " value="#{javaExercises.inputString}"/>
+                border: 2px solid #f6912f; font-size:30px; height:60px; background-color: white; outline: none; " value="#{javaExercises.input}"/>
             </div>
             
             <div id="mainbuttons">
@@ -174,22 +174,26 @@
                 </div>
             </div>
             <p />
+            <div style="correctProgram">
+                Your Program is Correct
+            </div>
+            <p />
             
             <div style="#{javaExercises.automaticCheckAreaStyle}">
                 <span class="automaticChecktitles">Input</span>
                 <br />
-                <h:inputText class="input"  style=" #{javaExercises.inputStyle} width:100%;
-                    border: 2px solid #f6912f; font-size:30px; height:60px; background-color: white; outline: none; " value="#{javaExercises.inputString}"/>
+                <h:inputText class="input"  style=" #{javaExercises.inputStyle} width:100%; font-size:1.2em;
+                    border: 2px solid #f6912f;" value="#{javaExercises.acInput}"/>
                 <p />
                 <span class="automaticChecktitles">Expected Output</span>
                 <br />
                 <h:inputText class="expectedoutput"  style=" #{javaExercises.expectedOutputStyle} width:100%;
-                    border: 2px solid #f6912f; font-size:30px; height:60px; background-color: white; outline: none; " value="#{javaExercises.expectedOutputString}"/>
+                    border: 2px solid #f6912f; font-size:1.2em; " value="#{javaExercises.expectedOutputString}"/>
                 <p />
                 <span class="automaticChecktitles">Your Output</span>
                 <br />
                 <h:inputText class="youroutput"  style=" #{javaExercises.yourOutputStyle} width:100%; overflow:scroll;
-                    border: 2px solid #f6912f; font-size:30px; height:60px; background-color: white; " value="#{javaExercises.outputString}"/>                        
+                    border: 2px solid #f6912f; font-size:1.2em;" value="#{javaExercises.outputString}"/>                        
 
             </div>
             
