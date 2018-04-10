@@ -588,7 +588,7 @@ public class JavaExercises implements Serializable {
         String ErrorMessage         = GenerateHTMLFromText(ReturnMessage("java", runp.getErrorStream())).toString();
         StringBuffer OutputMessage  = ReturnMessage("java", runp.getInputStream());
         final Output result         = new Output(ErrorMessage, OutputMessage.toString(), "", GenerateHTMLFromText(OutputMessage).toString());
-        output.setExampleOutputString(OutputMessage.toString());
+        output.setExampleOutputString(OutputMessage);
         
         runp.destroy();
 
@@ -600,7 +600,7 @@ public class JavaExercises implements Serializable {
             OutputMessage           = ReturnMessage("java", runp.getInputStream());
             final Output result2    = new Output(ErrorMessage, OutputMessage.toString(), "", GenerateHTMLFromText(OutputMessage).toString());
             
-            output.setUserOutputString(OutputMessage.toString());
+            output.setUserOutputString(OutputMessage);
         }
         
         
@@ -647,6 +647,19 @@ public class JavaExercises implements Serializable {
         return sb;        
     }
         
+    public String GenerateHTMLFromStringBuffer(StringBuffer strB){
+        
+        String htmlStr = "<div>";
+        String[] lines = strB.toString().split("\\n");
+        for(String s: lines){
+            htmlStr += s + "<br />";
+        }
+        htmlStr += "</div>";
+        
+        return htmlStr;
+        
+    }
+    
     public void automaticCheck() throws IOException{
         
         correctProgram              = "display:block;";
@@ -654,9 +667,10 @@ public class JavaExercises implements Serializable {
         automaticCheckAreaStyle     = "display:block;";
 
         Output output = compileRun(true);
-        acInput = output.getExampleInputString().toString();
+        
+        acInput = output.getExampleInputString();
         expectedOutputString = GrabFileContents(output.getExampleOutputFile()).toString();
-        yourOutputString = output.getExampleOutputString().toString();
+        yourOutputString = GenerateHTMLFromStringBuffer(output.getExampleOutputString());
                                 
         //String str = GrabFileContents(output.getExampleOutputFile()).toString();
         //String[] outputStringTokens = str.split("#");

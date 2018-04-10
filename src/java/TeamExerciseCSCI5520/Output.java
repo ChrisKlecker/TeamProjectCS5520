@@ -11,11 +11,11 @@ package TeamExerciseCSCI5520;
  */
 public class Output{
     private String ErrorString;
-    private String ExampleOutputString;
+    private StringBuffer ExampleOutputString;
     private String ExampleOutputFile;
     private String ExampleInputString;
     private String ExampleInputFile;
-    private String UserOutputString;
+    private StringBuffer UserOutputString;
     private String UserOutputFile;
     private String UserInputString;
     private String UserInputFile;
@@ -57,11 +57,11 @@ public class Output{
         this.ErrorString = ErrorString;
     }
 
-    public String getExampleOutputString() {
+    public StringBuffer getExampleOutputString() {
         return ExampleOutputString;
     }
 
-    public void setExampleOutputString(String ExampleOutputString) {
+    public void setExampleOutputString(StringBuffer ExampleOutputString) {
         this.ExampleOutputString = ExampleOutputString;
     }
 
@@ -89,11 +89,11 @@ public class Output{
         this.ExampleInputFile = ExampleInputFile;
     }
 
-    public String getUserOutputString() {
+    public StringBuffer getUserOutputString() {
         return UserOutputString;
     }
 
-    public void setUserOutputString(String UserOutputString) {
+    public void setUserOutputString(StringBuffer UserOutputString) {
         this.UserOutputString = UserOutputString;
     }
 
@@ -151,11 +151,11 @@ public class Output{
         this.m_SourceDirectory = "";
         this.m_FullPath = "";
         this.m_HTMLOutputString = "";
-        this.ExampleOutputString = "";
+        this.ExampleOutputString = new StringBuffer();
         this.ExampleOutputFile = "";
         this.ExampleInputString = "";
         this.ExampleInputFile = "";
-        this.UserOutputString = "";
+        this.UserOutputString = new StringBuffer();
         this.UserOutputFile = "";
         this.UserInputString = "";
         this.UserInputFile = "";
@@ -172,11 +172,11 @@ public class Output{
         this.InputString = InputString;
 
         this.ErrorString = ErrorString;
-        this.ExampleOutputString = "";
+        this.ExampleOutputString = new StringBuffer();
         this.ExampleOutputFile = "";
         this.ExampleInputString = "";
         this.ExampleInputFile = "";
-        this.UserOutputString = "";
+        this.UserOutputString = new StringBuffer();
         this.UserOutputFile = "";
         this.UserInputString = "";
         this.UserInputFile = "";
