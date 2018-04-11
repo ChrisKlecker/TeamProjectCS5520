@@ -19,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  *
@@ -49,7 +50,7 @@ public class JavaExercises implements Serializable {
     private String ShowInputWindow;
     private String inputFile;
     private String ExampleInputFile;
-    private String correctProgram;
+    private String correctProgramStyle;
     private String correctProgramString;
     private String expectedOutputStyle;
     private String yourOutputStyle;
@@ -85,12 +86,12 @@ public class JavaExercises implements Serializable {
         this.ExampleInputFile = ExampleInputFile;
     }
 
-    public String getCorrectProgram() {
-        return correctProgram;
+    public String getCorrectProgramStyle() {
+        return correctProgramStyle;
     }
 
-    public void setCorrectProgram(String correctProgram) {
-        this.correctProgram = correctProgram;
+    public void setCorrectProgramStyle(String correctProgramStyle) {
+        this.correctProgramStyle = correctProgramStyle;
     }
 
     public String getCorrectProgramString() {
@@ -275,6 +276,7 @@ public class JavaExercises implements Serializable {
         ErrorString         = "";
         InputString         = "";
         RecommendClass      ="recommend";
+        ExampleInputFile    = "";
         OutputResultClass   ="outputresultHidden";
         CodeString          = "/*Paste your "+ExerciseSelected+" here and click Automatic Check.\n" +
                               "For all programming projects, the numbers should be double\n" +
@@ -288,7 +290,8 @@ public class JavaExercises implements Serializable {
         expectedOutputStyle         = "display:block;";
         yourOutputStyle             = "display:block;";
         automaticCheckAreaStyle     = "display:none;";
-        
+        correctProgramString        = "";
+        correctProgramStyle         = "display:none;";
         Initialize();
     }
 
@@ -333,11 +336,11 @@ public class JavaExercises implements Serializable {
     
     public void SetExerciseInformation() throws IOException{
           
+        ExampleInputFile    = "";
         CodeString=(GetCodeForExercise());
         input=(GetInputFromFiles());
-        //inputStyle                  = "display:none;";
-        //expectedOutputStyle         = "display:none;";
-        //yourOutputStyle             = "display:none;";
+        correctProgramString        = "";
+        correctProgramStyle         = "display:none;";
     }
 
     public String GetCodeForExercise() throws IOException {
@@ -428,6 +431,7 @@ public class JavaExercises implements Serializable {
 
         File f                  = new File(getDataFile() + "\\gradeexercise");
         File[] fList            = f.listFiles(); 
+        ArrayList<String> FoundFiles = new ArrayList<>();
         
         for (File file : fList){
             
@@ -439,63 +443,87 @@ public class JavaExercises implements Serializable {
                 if(FileName.contains("Extra") == true && ExerciseSelected.contains("Extra") == false)
                     continue;
 
-                ExampleInputFile = (getDataFile() + "\\gradeexercise\\" + FileName);    
-                Scanner scan = new Scanner(new File(ExampleInputFile));
-            
-                setShowInputWindow("display:block;");
-                
-                while(scan.hasNext()){
-                    
-                    String value= scan.nextLine();
-                    
-                    if(value != null && !value.isEmpty()){
-                        input = value;
-                    }
-                    else{
-                        input = getInput();
-                    }
-                    
-                    return input;
-                }
+                FoundFiles.add((getDataFile() + "\\gradeexercise\\" + FileName));
             }
         }
         
-        setShowInputWindow("display:none;");
-        return "";
+        if(FoundFiles.size()>0){
+    
+            //Get Random Input File
+            setShowInputWindow("display:block;");
+
+            int randomNum       = ThreadLocalRandom.current().nextInt(0, FoundFiles.size());
+            ExampleInputFile    = FoundFiles.get(randomNum);    
+            Scanner scan        = new Scanner(new File(ExampleInputFile));
+            StringBuffer sb     = new StringBuffer();
+
+            while(scan.hasNext()){
+
+                sb.append(scan.nextLine());
+            }
+            return sb.toString();
+        }
+        else{
+            ExampleInputFile    = "";
+            setShowInputWindow("display:none;");
+            return "";
+        }    
     }
 
-    public StringBuffer GrabFileContents(String Path) throws FileNotFoundException{
+    public StringBuffer GrabFileContents(String Path) throws FileNotFoundException, IOException{
         
-        Scanner scan    = new Scanner(new FileReader(Path));
         StringBuffer sb = new StringBuffer();
+        try{
+            BufferedReader in = new BufferedReader(new FileReader(Path));
         
-        while(scan.hasNext()){
-            sb.append(scan.next());
+            for (String line; (line = in.readLine()) != null; )
+                sb.append(line);
+        
         }
-        
+        catch(FileNotFoundException e){
+        }
         return sb;
+    }
+    
+    public void CallCompileRun() throws IOException{
+        
+        Output output = compileRun(false);
+        correctProgramString        = "";
+        correctProgramStyle         = "display:none;";
     }
     
     public Output compileRun(boolean AutomaticRun) throws IOException{
         
-        String NewPath = ExampleInputFile.replace("gradeexercise", "temp");
-        WriteToFile(NewPath, input, false);
-        
-        if(!AutomaticRun)
+        if(!AutomaticRun){
             automaticCheckAreaStyle = "display:none";
-        
-        //setInput(GetInputForExercise());
+            OutputResultClass   = "outputresult";
+        }
+       
         StringBuffer consoleBuffer = new StringBuffer();        
         consoleBuffer.append("<pre>command>javac "+ExerciseSelected+".java<br>");
 
         //We need to build up our Output object to store everything we need for compile and automatic check. 
         Output output = CompileJavaProgram(ExerciseSelected);
+
+        if(!ExampleInputFile.isEmpty()){
+            
+            String NewPath = ExampleInputFile.replace("gradeexercise", "temp");
+            WriteToFile(NewPath, input, false);
+            
+            output.setExampleInputFile(ExampleInputFile);
+            StringBuffer sb = GrabFileContents(ExampleInputFile);
         
-        output.setExampleInputFile(ExampleInputFile);
-        output.setExampleInputString(GrabFileContents(ExampleInputFile).toString());
-        output.setExampleOutputFile(ExampleInputFile.replace(".input", ".output"));
-        output.setUserInputFile(ExampleInputFile.replace("gradeexercise", "temp"));
-        output.setUserInputString(new StringBuffer(input).toString());
+            if(sb != null && sb.length()>0)
+                output.setExampleInputString(GenerateHTMLFromStringBuffer(sb));
+                    
+            output.setUserInputFile(ExampleInputFile.replace("gradeexercise", "temp"));
+            output.setUserInputString(new StringBuffer(input).toString());
+            output.setExampleOutputFile(ExampleInputFile.replace(".input", ".output"));
+        }
+        else{
+            String OutputFile = this.getDataFile() + "\\gradeexercise\\" + ExerciseSelected + ".output";
+            output.setExampleOutputFile(OutputFile);
+        }    
       
         if(output.getErrorString().isEmpty()){
             consoleBuffer.append("Compiled Successfully<br><br>");
@@ -510,13 +538,9 @@ public class JavaExercises implements Serializable {
             }
             
             consoleBuffer.append( (output.getErrorString().isEmpty()) ? output.getUserOutputString() : output.getErrorString());
-
-            if(!AutomaticRun)
-                OutputResultClass   = "outputresult";
         }
         else{
             consoleBuffer.append(output.getErrorString());
-            OutputResultClass   = "outputresult";
         }  
         
         consoleBuffer.append("<br>command></pre>");
@@ -566,20 +590,12 @@ public class JavaExercises implements Serializable {
         ArrayList<String> runCommand = new ArrayList<>();
         runCommand.add("java");
         runCommand.add(ExerciseSelected);
-
-        /*if(InputString != null && !InputString.isEmpty()){
-            String[] inputString = InputString.split(" ");
-            for(int i=0; i<inputString.length; i++){
-                
-                runCommand.add(inputString[i]);
-            }
-        }*/
         
         runpb           = new ProcessBuilder(runCommand);  //We can add arguments like a string formatter
         runpb.directory(new File(output.getSourceDirectory()));
         runpb.redirectErrorStream(true);
 
-        if(output.getExampleInputString().length() != 0) {
+        if(output.getExampleInputString().length() > 0) {
 
             runpb.redirectInput(Redirect.from(new File(output.getExampleInputFile())));
         }
@@ -592,7 +608,7 @@ public class JavaExercises implements Serializable {
         
         runp.destroy();
 
-        if(output.getExampleInputString().length() != 0) {
+        if(output.getExampleInputString().length() > 0) {
             
             runpb.redirectInput(Redirect.from(new File(output.getUserInputFile())));
             runp                    = runpb.start();  
@@ -649,12 +665,12 @@ public class JavaExercises implements Serializable {
         
     public String GenerateHTMLFromStringBuffer(StringBuffer strB){
         
-        String htmlStr = "<div>";
+        String htmlStr = "<span>";
         String[] lines = strB.toString().split("\\n");
         for(String s: lines){
             htmlStr += s + "<br />";
         }
-        htmlStr += "</div>";
+        htmlStr += "</span>";
         
         return htmlStr;
         
@@ -662,30 +678,55 @@ public class JavaExercises implements Serializable {
     
     public void automaticCheck() throws IOException{
         
-        correctProgram              = "display:block;";
+        correctProgramStyle         = "display:block;";
         OutputResultClass           = "outputresultHidden";
         automaticCheckAreaStyle     = "display:block;";
 
-        Output output = compileRun(true);
+        Output output               = compileRun(true);
         
-        acInput = output.getExampleInputString();
-        expectedOutputString = GrabFileContents(output.getExampleOutputFile()).toString();
-        yourOutputString = GenerateHTMLFromStringBuffer(output.getExampleOutputString());
-                                
-        //String str = GrabFileContents(output.getExampleOutputFile()).toString();
-        //String[] outputStringTokens = str.split("#");
-        
-        //for(int i=0; i<outputStringTokens.length; i++){
+        if(output.getExampleInputFile().isEmpty())
+            inputStyle = "display:none;";
+        else
+            inputStyle = "display:block;";
             
-        //    Pattern pattern = Pattern.compile(outputStringTokens[i]);
-        //    Matcher m = pattern.matcher(output.getExampleOutputString());
-        //    if(!m.find()){
-        //        automaticCheckAreaStyle     = "display:block";
-        //        correctProgramString        = "Your Program is incorrect";
-        //        return;
-        //    }
-        //}
-        //correctProgramString        = "Your Program is Correct";
+        
+        acInput                     = output.getExampleInputString();
+        expectedOutputString        = GrabFileContents(output.getExampleOutputFile()).toString();
+        yourOutputString            = GenerateHTMLFromStringBuffer(output.getExampleOutputString());
+                                        
+        String str = GrabFileContents(output.getExampleOutputFile()).toString();
+        
+        //Take output strings from example output file and split them into separate lines based on the # character.
+        //Take output strings from our example and split them into separate lines based on the \r\n characters. 
+        String[] RealOutputStringTokens = str.split("#");
+        String[] MyOutputStringTokens  = output.getExampleOutputString().toString().split("\r\n");
+        
+        //We now have two arrays with output which we need to match. We match from the example output file to the 
+        //user output line by line. 
+        
+        for(int i=0; i<RealOutputStringTokens.length; i++){
+                       
+            Pattern pattern = Pattern.compile(RealOutputStringTokens[i]);
+            boolean Found = false;
+            for(int j=0; j<MyOutputStringTokens.length; j++){
+                
+                Matcher m = pattern.matcher(MyOutputStringTokens[j]);
+                if(m.find()){
+                    Found = true;
+                    break;
+                }
+            }
+          
+            if(!Found){
+                correctProgramString    = "Your program is incorrect";
+                automaticCheckAreaStyle = "display:block;";
+                //HighlightExactProblemArea(RealOutputStringTokens[i], )
+                return;
+            }
+        }
+        
+        correctProgramString        = "Your program is correct";
+        automaticCheckAreaStyle     = "display:none;";
     }
     
     public String WriteToFile(String Path, String Data, boolean DestroyTextOnExit){
@@ -707,5 +748,5 @@ public class JavaExercises implements Serializable {
         } 
         
         return JavaFile.getAbsolutePath();
-    }
+    }   
 }

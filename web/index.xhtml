@@ -133,7 +133,6 @@
                 max-height: 100px;
             }
         </style>
- 
     </h:head>
     <h:body>
         <h:form id="gradeForm">
@@ -145,7 +144,7 @@
                 <h:outputLabel>Choose a Chapter: </h:outputLabel>
                 <h:selectOneMenu class="select" value="#{javaExercises.chapterSelected}">
                     <f:selectItems value="#{javaExercises.chapters}"/>
-                    <f:ajax render = "exercises" />
+                    <f:ajax render="exercises" />
                 </h:selectOneMenu>
 
                 &nbsp;&nbsp;&nbsp;&nbsp;
@@ -168,7 +167,7 @@
             </div>
             
             <div id="mainbuttons">
-                <h:commandButton value="Compile/Run" class="buttons" action = "#{javaExercises.compileRun(false)}"/> 
+                <h:commandButton value="Compile/Run" class="buttons" action = "#{javaExercises.CallCompileRun()}"/> 
                 &nbsp;
                 <h:commandButton value="Automatic Check" style="#{javaExercises.automaticCheckButtonStyle}" class="buttons" action = "#{javaExercises.automaticCheck()}" /> 
             </div>
@@ -193,24 +192,25 @@
                 </div>
             </div>
             <p />
-            <div style="correctProgram">
-                Your Program is Correct
+            <div style="#{javaExercises.correctProgramStyle}">
+                <h:outputText value="#{javaExercises.correctProgramString}" escape="false"/>
             </div>
             <p />
             
             <div style="#{javaExercises.automaticCheckAreaStyle}">
-                <span class="automaticChecktitles">Input</span>
-                <br />
-                <h:outputText class="automaticCheckBoxes"  style=" #{javaExercises.inputStyle} " value="#{javaExercises.acInput}"/>
-                <p />
-                <span class="automaticChecktitles">Expected Output</span>
-                <br />
-                <h:outputText class="automaticCheckBoxes"  style=" #{javaExercises.expectedOutputStyle} " value="#{javaExercises.expectedOutputString}" escape="false"/>
+                <div style=" #{javaExercises.inputStyle} ">
+                    <span class="automaticChecktitles">Input</span>
+                    <br />
+                    <h:outputText class="automaticCheckBoxes"  value="#{javaExercises.acInput}" escape="false"/>
+                </div>
                 <p />
                 <span class="automaticChecktitles">Your Output</span>
                 <br />
                 <h:outputText class="automaticCheckBoxes"  style=" #{javaExercises.yourOutputStyle}" value="#{javaExercises.yourOutputString}" escape="false"/>                        
-
+                <p />
+                <span class="automaticChecktitles">Expected Output</span>
+                <br />
+                <h:outputText class="automaticCheckBoxes"  style=" #{javaExercises.expectedOutputStyle} " value="#{javaExercises.expectedOutputString}" escape="false"/>
             </div>
             
             <div id="footer">
