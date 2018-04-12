@@ -34,7 +34,7 @@ public class JavaExercises implements Serializable {
     /**
      * Properties of our Program
      */
-    final static int EXECUTION_TIME_ALLOWED = 1000;
+    final static int EXECUTION_TIME_ALLOWED = 10000;
     final static int EXECUTION_TIME_INTERVAL = 100;
 
     private ArrayList<String> Chapters;
@@ -341,27 +341,21 @@ public class JavaExercises implements Serializable {
     public void SetExerciseInformation() throws IOException{
           
         ExampleInputFile    = "";
-        CodeString=(GetCodeForExercise());
-        input=(GetInputFromFiles());
         ErrorString         = "";
         InputString         = "";
         RecommendClass      = "recommend";
-        ExampleInputFile    = "";
         OutputResultClass   = "outputresultHidden";
-        ShowInputWindow             = "display:none;";
         inputStyle                  = "display:block;"; //
         expectedOutputStyle         = "display:block;";
         yourOutputStyle             = "display:block;";
         automaticCheckAreaStyle     = "display:none;";
         correctProgramString        = "";
         correctProgramStyle         = "display:none;";
+        CodeString=(GetCodeForExercise());
+        input=(GetInputFromFiles());
    }
 
     public String GetCodeForExercise() throws IOException {
-        
-        //ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
-        //String realPath     = ctx.getRealPath("/");
-        //setDataFile(realPath + "ags10e\\exercisedescription");
         
         String CodeReturn = "";
         
@@ -390,59 +384,10 @@ public class JavaExercises implements Serializable {
         }
         
         return CodeReturn;
-    }
-    
-    /*public String GetInputForExercise() throws IOException {
-        
-        //ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
-        //String realPath     = ctx.getRealPath("/");
-        //setDataFile(realPath + "ags10e\\temp");
-
-        File f                  = new File(getDataFile() + "\\gradeexercise");
-        File[] fList            = f.listFiles(); 
-        
-        for (File file : fList){
-            
-            String FileName = file.getName();
-            
-            if(FileName.contains(ExerciseSelected) == true && FileName.contains("input") == true){
-                
-                //I noticed that this doesn't check if the file is "extra" even if the exercise selected wasn't an "extra" exercise. 
-                if(FileName.contains("Extra") == true && ExerciseSelected.contains("Extra") == false)
-                    continue;
-
-                setInputFile(getDataFile() + "\\gradeexercise\\" + FileName);    
-                Scanner scan = new Scanner(new File(getDataFile() + "\\" + FileName));
-            
-                setShowInputWindow("display:block;");
-                
-                while(scan.hasNext()){
-                    
-                    String value= scan.nextLine();
-                    
-                    if(value != null && !value.isEmpty()){
-                        input = value;
-                    }
-                    else{
-                        input = getInput();
-                    }
-                    
-                    return input;
-                }
-            }
-        }
-        
-        setShowInputWindow("display:none;");
-        return "";
-    }*/
-    
+    }    
 
     public String GetInputFromFiles() throws FileNotFoundException{
         
-        //ServletContext ctx  = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
-        //String realPath     = ctx.getRealPath("/");
-        //setDataFile(realPath + "ags10e\\temp");
-
         File f                  = new File(getDataFile() + "\\gradeexercise");
         File[] fList            = f.listFiles(); 
         ArrayList<String> FoundFiles = new ArrayList<>();
@@ -624,9 +569,12 @@ public class JavaExercises implements Serializable {
                         }
 
                         sleepTime += EXECUTION_TIME_INTERVAL;
+                        
                         int exitValue = proc1.exitValue();
                         isFinished = true;
+                        
                     } catch (IllegalThreadStateException ex) {
+                        ex.printStackTrace();
                     }
                 }
                 if (!isFinished) {
