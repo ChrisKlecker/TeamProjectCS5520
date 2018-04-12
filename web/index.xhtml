@@ -113,24 +113,31 @@
             }
                        
             .automaticChecktitles{
-                background-color:red;
+                display:inline-block;
+                background-color: #e31c3d;
                 color:white;
-                margin:0px 15px;
+                width:160px;
+                font-weight:bold;
+                margin:0 15px;
                 padding: 5px 10px;
                 border:1px solid black;
                 border-radius: 3px;
+                font-variant:small-caps;
             }
             
             .automaticCheckBoxes{
+                display:block;
                 width:auto; 
-                margin: 0 10px;
+                margin: 0px 10px;
                 font-size:1.2em;
                 border: 2px solid #f6912f;
-                padding: 20px 5px 10px 10px;
+                padding: 10px 5px 10px 10px;
                 overflow:auto;
                 word-wrap:normal;
                 min-height: 35px;
                 max-height: 100px;
+                border-radius: 5px;
+                
             }
         </style>
     </h:head>
@@ -192,25 +199,28 @@
                 </div>
             </div>
             <p />
-            <div style="#{javaExercises.correctProgramStyle}">
-                <h:outputText value="#{javaExercises.correctProgramString}" escape="false"/>
-            </div>
             <p />
             
             <div style="#{javaExercises.automaticCheckAreaStyle}">
-                <div style=" #{javaExercises.inputStyle} ">
-                    <span class="automaticChecktitles">Input</span>
+                <h:outputText value="#{javaExercises.correctProgramString}" escape="false"/>
+                <p/>
+                <div style=" #{javaExercises.inputStyle}">
+                    <div class="automaticChecktitles">Input</div>
                     <br />
                     <h:outputText class="automaticCheckBoxes"  value="#{javaExercises.acInput}" escape="false"/>
                 </div>
                 <p />
-                <span class="automaticChecktitles">Your Output</span>
-                <br />
-                <h:outputText class="automaticCheckBoxes"  style=" #{javaExercises.yourOutputStyle}" value="#{javaExercises.yourOutputString}" escape="false"/>                        
+                <div style=" #{javaExercises.yourOutputStyle} ">
+                    <div class="automaticChecktitles">Your Output</div>
+                    <br />
+                    <h:outputText class="automaticCheckBoxes" value="#{javaExercises.yourOutputString}" escape="false"/>                        
+                </div>
                 <p />
-                <span class="automaticChecktitles">Expected Output</span>
-                <br />
-                <h:outputText class="automaticCheckBoxes"  style=" #{javaExercises.expectedOutputStyle} " value="#{javaExercises.expectedOutputString}" escape="false"/>
+                <div style=" #{javaExercises.expectedOutputStyle} ">
+                    <div class="automaticChecktitles">Expected Output</div>
+                    <br />
+                    <h:outputText class="automaticCheckBoxes" value="#{javaExercises.expectedOutputString}" escape="false"/>
+                </div>
             </div>
             
             <div id="footer">

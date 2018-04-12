@@ -25,6 +25,25 @@ public class Output{
     private String m_SourceDirectory;
     private String m_FullPath;
     private String m_HTMLOutputString;
+    private boolean isInfiniteLoop;
+    private int timeUsed;
+
+    public boolean isIsInfiniteLoop() {
+        return isInfiniteLoop;
+    }
+
+    public void setIsInfiniteLoop(boolean isInfiniteLoop) {
+        this.isInfiniteLoop = isInfiniteLoop;
+    }
+
+    public int getTimeUsed() {
+        return timeUsed;
+    }
+
+    public void setTimeUsed(int timeUsed) {
+        this.timeUsed = timeUsed;
+    }
+
 
     public String getOutputString() {
         return OutputString;
@@ -161,6 +180,8 @@ public class Output{
         this.UserInputFile = "";
         this.OutputString = "";
         this.InputString = "";
+        this.isInfiniteLoop = false;
+        this.timeUsed = 100;
         
     }
 
@@ -180,5 +201,7 @@ public class Output{
         this.UserOutputFile = "";
         this.UserInputString = "";
         this.UserInputFile = "";
+        this.isInfiniteLoop = false;
+        this.timeUsed = 100;
     }
 }

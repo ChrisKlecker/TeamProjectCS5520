@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Timer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.faces.context.FacesContext;
@@ -33,6 +34,9 @@ public class JavaExercises implements Serializable {
     /**
      * Properties of our Program
      */
+    final static int EXECUTION_TIME_ALLOWED = 1000;
+    final static int EXECUTION_TIME_INTERVAL = 100;
+
     private ArrayList<String> Chapters;
     private ArrayList<String> Exercises;
     private ArrayList<String> AllExercises;
@@ -273,11 +277,6 @@ public class JavaExercises implements Serializable {
         AllExercises        = new ArrayList<>();
         ExerciseSelected    = "Exercise01_01";
         ChapterSelected     = "Chapter 1";
-        ErrorString         = "";
-        InputString         = "";
-        RecommendClass      ="recommend";
-        ExampleInputFile    = "";
-        OutputResultClass   ="outputresultHidden";
         CodeString          = "/*Paste your "+ExerciseSelected+" here and click Automatic Check.\n" +
                               "For all programming projects, the numbers should be double\n" +
                               "unless it is explicitly stated as integer.\n" +
@@ -285,6 +284,11 @@ public class JavaExercises implements Serializable {
                               "your code used input.readInt(), but it should be input.readDouble().\n" +
                               "For integers, use int unless it is explicitly stated as long. */";
         
+        ErrorString         = "";
+        InputString         = "";
+        RecommendClass      = "recommend";
+        ExampleInputFile    = "";
+        OutputResultClass   = "outputresultHidden";
         ShowInputWindow             = "display:none;";
         inputStyle                  = "display:block;"; //
         expectedOutputStyle         = "display:block;";
@@ -339,9 +343,19 @@ public class JavaExercises implements Serializable {
         ExampleInputFile    = "";
         CodeString=(GetCodeForExercise());
         input=(GetInputFromFiles());
+        ErrorString         = "";
+        InputString         = "";
+        RecommendClass      = "recommend";
+        ExampleInputFile    = "";
+        OutputResultClass   = "outputresultHidden";
+        ShowInputWindow             = "display:none;";
+        inputStyle                  = "display:block;"; //
+        expectedOutputStyle         = "display:block;";
+        yourOutputStyle             = "display:block;";
+        automaticCheckAreaStyle     = "display:none;";
         correctProgramString        = "";
         correctProgramStyle         = "display:none;";
-    }
+   }
 
     public String GetCodeForExercise() throws IOException {
         
@@ -583,7 +597,54 @@ public class JavaExercises implements Serializable {
         return null;
     }
     
-    public Output RunJavaProgram(Output output) throws IOException{
+    public Process RunProcessInThread(ProcessBuilder runpb, Output result){
+        
+        long startTime = System.currentTimeMillis();
+        Process runp = null;
+
+        try {
+
+          runp = runpb.start();
+        } catch (Exception ex) {
+        }
+        
+        final Process proc1 = runp;
+        new Thread() {
+            public void run() {
+
+                int sleepTime       = 0;
+                boolean isFinished  = false;
+
+                while (sleepTime <= EXECUTION_TIME_ALLOWED && !isFinished) {
+                    
+                    try {
+                        try {
+                            Thread.sleep(EXECUTION_TIME_INTERVAL);
+                        } catch (Exception ex) {
+                        }
+
+                        sleepTime += EXECUTION_TIME_INTERVAL;
+                        int exitValue = proc1.exitValue();
+                        isFinished = true;
+                    } catch (IllegalThreadStateException ex) {
+                    }
+                }
+                if (!isFinished) {
+                    proc1.destroy();
+                    result.setIsInfiniteLoop(true);
+                }
+            }
+        }.start();
+        
+        try {
+            int exitCode = runp.waitFor();
+        } catch (Exception ex) {
+        }  
+        
+        return runp;
+    }
+
+    public void RunJavaProgram(Output output) throws IOException{
         
         //Build our java command line call to pass to processbuilder. We may input so generate a command with input if that is the case
         ProcessBuilder runpb = null;
@@ -599,11 +660,20 @@ public class JavaExercises implements Serializable {
 
             runpb.redirectInput(Redirect.from(new File(output.getExampleInputFile())));
         }
+        
+        Process runp = RunProcessInThread(runpb, output); 
 
-        Process runp                = runpb.start();  
         String ErrorMessage         = GenerateHTMLFromText(ReturnMessage("java", runp.getErrorStream())).toString();
         StringBuffer OutputMessage  = ReturnMessage("java", runp.getInputStream());
-        final Output result         = new Output(ErrorMessage, OutputMessage.toString(), "", GenerateHTMLFromText(OutputMessage).toString());
+        
+        if(ErrorMessage.isEmpty() && output.isIsInfiniteLoop()){
+            ErrorMessage = "Your program takes too long. It runs out of the allowed CPU time 10000ms. It may have an infinite loop or the expected input for the program is not provided or provided incorrectly.";
+            ErrorMessage = (GenerateHTMLFromText(new StringBuffer(ErrorMessage))).toString();
+        }
+        
+        output.setErrorString(ErrorMessage);
+        output.setOutputString(OutputMessage.toString());
+        output.setHTMLOutputString(GenerateHTMLFromText(OutputMessage).toString());
         output.setExampleOutputString(OutputMessage);
         
         runp.destroy();
@@ -611,16 +681,20 @@ public class JavaExercises implements Serializable {
         if(output.getExampleInputString().length() > 0) {
             
             runpb.redirectInput(Redirect.from(new File(output.getUserInputFile())));
-            runp                    = runpb.start();  
+            runp = RunProcessInThread(runpb, output); 
             ErrorMessage            = GenerateHTMLFromText(ReturnMessage("java", runp.getErrorStream())).toString();
+
+            if(ErrorMessage.isEmpty() && output.isIsInfiniteLoop()){
+                ErrorMessage = "Your program takes too long. It runs out of the allowed CPU time 10000ms. It may have an infinite loop or the expected input for the program is not provided or provided incorrectly.";
+                ErrorMessage = (GenerateHTMLFromText(new StringBuffer(ErrorMessage))).toString();
+            }
+
             OutputMessage           = ReturnMessage("java", runp.getInputStream());
-            final Output result2    = new Output(ErrorMessage, OutputMessage.toString(), "", GenerateHTMLFromText(OutputMessage).toString());
-            
+            output.setErrorString(ErrorMessage);
+            output.setOutputString(OutputMessage.toString());
+            output.setHTMLOutputString(GenerateHTMLFromText(OutputMessage).toString());
             output.setUserOutputString(OutputMessage);
         }
-        
-        
-        return result;
     }
         
     public StringBuffer ReturnMessage(String str, InputStream I) throws IOException{
@@ -688,45 +762,51 @@ public class JavaExercises implements Serializable {
             inputStyle = "display:none;";
         else
             inputStyle = "display:block;";
-            
+
+        if(!output.getErrorString().isEmpty()){
+            automaticCheckAreaStyle = "display:none";
+            OutputResultClass   = "outputresult";
+        }
+        else{
         
-        acInput                     = output.getExampleInputString();
-        expectedOutputString        = GrabFileContents(output.getExampleOutputFile()).toString();
-        yourOutputString            = GenerateHTMLFromStringBuffer(output.getExampleOutputString());
-                                        
-        String str = GrabFileContents(output.getExampleOutputFile()).toString();
+            acInput                     = output.getExampleInputString();
+            expectedOutputString        = GrabFileContents(output.getExampleOutputFile()).toString();
+            yourOutputString            = GenerateHTMLFromStringBuffer(output.getExampleOutputString());
+
+            String str = GrabFileContents(output.getExampleOutputFile()).toString();
+
+            //Take output strings from example output file and split them into separate lines based on the # character.
+            //Take output strings from our example and split them into separate lines based on the \r\n characters. 
+            String[] RealOutputStringTokens = str.split("#");
+            String[] MyOutputStringTokens  = output.getExampleOutputString().toString().split("\r\n");
+
+            //We now have two arrays with output which we need to match. We match from the example output file to the 
+            //user output line by line. 
         
-        //Take output strings from example output file and split them into separate lines based on the # character.
-        //Take output strings from our example and split them into separate lines based on the \r\n characters. 
-        String[] RealOutputStringTokens = str.split("#");
-        String[] MyOutputStringTokens  = output.getExampleOutputString().toString().split("\r\n");
-        
-        //We now have two arrays with output which we need to match. We match from the example output file to the 
-        //user output line by line. 
-        
-        for(int i=0; i<RealOutputStringTokens.length; i++){
-                       
-            Pattern pattern = Pattern.compile(RealOutputStringTokens[i]);
-            boolean Found = false;
-            for(int j=0; j<MyOutputStringTokens.length; j++){
-                
-                Matcher m = pattern.matcher(MyOutputStringTokens[j]);
-                if(m.find()){
-                    Found = true;
-                    break;
+            for(int i=0; i<RealOutputStringTokens.length; i++){
+
+                Pattern pattern = Pattern.compile(RealOutputStringTokens[i]);
+                boolean Found = false;
+                for(int j=0; j<MyOutputStringTokens.length; j++){
+
+                    Matcher m = pattern.matcher(MyOutputStringTokens[j]);
+                    if(m.find()){
+                        Found = true;
+                        break;
+                    }
+                }
+
+                if(!Found){
+                    correctProgramString    = "Your program is incorrect";
+                    automaticCheckAreaStyle = "display:block;";
+                    //HighlightExactProblemArea(RealOutputStringTokens[i], )
+                    return;
                 }
             }
-          
-            if(!Found){
-                correctProgramString    = "Your program is incorrect";
-                automaticCheckAreaStyle = "display:block;";
-                //HighlightExactProblemArea(RealOutputStringTokens[i], )
-                return;
-            }
-        }
         
-        correctProgramString        = "Your program is correct";
-        automaticCheckAreaStyle     = "display:none;";
+            correctProgramString        = "Your program is correct";
+            automaticCheckAreaStyle     = "display:none;";
+        }
     }
     
     public String WriteToFile(String Path, String Data, boolean DestroyTextOnExit){
