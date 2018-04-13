@@ -21,6 +21,25 @@ public class Output{
     private String UserInputFile;
     private String OutputString;
     private String InputString;
+    private String LocalExampleOutputString;
+    private String LocalUserOutputString;
+
+    public String getLocalExampleOutputString() {
+        return LocalExampleOutputString;
+    }
+
+    public void setLocalExampleOutputString(String LocalExampleOutputString) {
+        this.LocalExampleOutputString = LocalExampleOutputString;
+    }
+
+    public String getLocalUserOutputString() {
+        return LocalUserOutputString;
+    }
+
+    public void setLocalUserOutputString(String LocalUserOutputString) {
+        this.LocalUserOutputString = LocalUserOutputString;
+    }
+    
     
     private String m_SourceDirectory;
     private String m_FullPath;
@@ -182,6 +201,8 @@ public class Output{
         this.InputString = "";
         this.isInfiniteLoop = false;
         this.timeUsed = 100;
+        this.LocalExampleOutputString = "";
+        this.LocalUserOutputString = "";
         
     }
 
@@ -203,5 +224,7 @@ public class Output{
         this.UserInputFile = "";
         this.isInfiniteLoop = false;
         this.timeUsed = 100;
+        this.LocalExampleOutputString = "";
+        this.LocalUserOutputString = "";
     }
 }

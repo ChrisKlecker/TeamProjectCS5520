@@ -135,7 +135,7 @@
                 overflow:auto;
                 word-wrap:normal;
                 min-height: 35px;
-                max-height: 100px;
+                max-height: 250px;
                 border-radius: 5px;
                 
             }
@@ -202,24 +202,27 @@
             <p />
             
             <div style="#{javaExercises.automaticCheckAreaStyle}">
-                <h:outputText value="#{javaExercises.correctProgramString}" escape="false"/>
+                <h:outputText style="font-size:24px;" value="#{javaExercises.correctProgramString}" escape="false"/>
+                
                 <p/>
-                <div style=" #{javaExercises.inputStyle}">
-                    <div class="automaticChecktitles">Input</div>
-                    <br />
-                    <h:outputText class="automaticCheckBoxes"  value="#{javaExercises.acInput}" escape="false"/>
-                </div>
-                <p />
-                <div style=" #{javaExercises.yourOutputStyle} ">
-                    <div class="automaticChecktitles">Your Output</div>
-                    <br />
-                    <h:outputText class="automaticCheckBoxes" value="#{javaExercises.yourOutputString}" escape="false"/>                        
-                </div>
-                <p />
-                <div style=" #{javaExercises.expectedOutputStyle} ">
-                    <div class="automaticChecktitles">Expected Output</div>
-                    <br />
-                    <h:outputText class="automaticCheckBoxes" value="#{javaExercises.expectedOutputString}" escape="false"/>
+                <div style="#{javaExercises.inputOutputBoxes}">
+                    <div style=" #{javaExercises.inputStyle}">
+                        <div class="automaticChecktitles">Input</div>
+                        <br />
+                        <h:outputText class="automaticCheckBoxes"  value="#{javaExercises.acInput}" escape="false"/>
+                    </div>
+                    <p />
+                    <div style=" #{javaExercises.yourOutputStyle} ">
+                        <div class="automaticChecktitles">Your Output</div>
+                        <br />
+                        <h:outputText class="automaticCheckBoxes" value="#{javaExercises.yourOutputString}" escape="false"/>                        
+                    </div>
+                    <p />
+                    <div style=" #{javaExercises.expectedOutputStyle} ">
+                        <div class="automaticChecktitles">Expected Output</div>
+                        <br />
+                        <h:outputText class="automaticCheckBoxes" value="#{javaExercises.expectedOutputString}" escape="false"/>
+                    </div>
                 </div>
             </div>
             

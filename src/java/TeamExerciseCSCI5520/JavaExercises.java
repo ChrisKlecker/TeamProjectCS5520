@@ -14,6 +14,7 @@ import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.regex.Matcher;
@@ -64,6 +65,15 @@ public class JavaExercises implements Serializable {
     private String inputStyle;
     private String yourOutputString;
     private String acInput;
+    private String inputOutputBoxes;
+
+    public String getInputOutputBoxes() {
+        return inputOutputBoxes;
+    }
+
+    public void setInputOutputBoxes(String inputOutputBoxes) {
+        this.inputOutputBoxes = inputOutputBoxes;
+    }
     
     public String getAcInput()                                   {return acInput;}
     public void setAcInput(String acInput)                    {this.acInput = inputStyle;}
@@ -296,6 +306,7 @@ public class JavaExercises implements Serializable {
         automaticCheckAreaStyle     = "display:none;";
         correctProgramString        = "";
         correctProgramStyle         = "display:none;";
+        inputOutputBoxes            = "display:none;";
         Initialize();
     }
 
@@ -351,6 +362,7 @@ public class JavaExercises implements Serializable {
         automaticCheckAreaStyle     = "display:none;";
         correctProgramString        = "";
         correctProgramStyle         = "display:none;";
+        inputOutputBoxes            = "display:none;";
         CodeString=(GetCodeForExercise());
         input=(GetInputFromFiles());
    }
@@ -449,6 +461,7 @@ public class JavaExercises implements Serializable {
         Output output = compileRun(false);
         correctProgramString        = "";
         correctProgramStyle         = "display:none;";
+        inputOutputBoxes            = "display:none;";
     }
     
     public Output compileRun(boolean AutomaticRun) throws IOException{
@@ -478,10 +491,12 @@ public class JavaExercises implements Serializable {
             output.setUserInputFile(ExampleInputFile.replace("gradeexercise", "temp"));
             output.setUserInputString(new StringBuffer(input).toString());
             output.setExampleOutputFile(ExampleInputFile.replace(".input", ".output"));
+            output.setUserOutputFile(output.getExampleOutputFile().replace("gradeexercise", "temp"));
         }
         else{
             String OutputFile = this.getDataFile() + "\\gradeexercise\\" + ExerciseSelected + ".output";
             output.setExampleOutputFile(OutputFile);
+            output.setUserOutputFile(output.getExampleOutputFile().replace("gradeexercise", "temp"));            
         }    
       
         if(output.getErrorString().isEmpty()){
@@ -551,6 +566,7 @@ public class JavaExercises implements Serializable {
 
           runp = runpb.start();
         } catch (Exception ex) {
+            ex.printStackTrace();
         }
         
         final Process proc1 = runp;
@@ -608,11 +624,14 @@ public class JavaExercises implements Serializable {
 
             runpb.redirectInput(Redirect.from(new File(output.getExampleInputFile())));
         }
+        //runpb.redirectOutput(Redirect.to(new File(output.getUserOutputFile())));
         
         Process runp = RunProcessInThread(runpb, output); 
 
         String ErrorMessage         = GenerateHTMLFromText(ReturnMessage("java", runp.getErrorStream())).toString();
         StringBuffer OutputMessage  = ReturnMessage("java", runp.getInputStream());
+
+        WriteToFile(output.getUserOutputFile(), OutputMessage.toString(), false);
         
         if(ErrorMessage.isEmpty() && output.isIsInfiniteLoop()){
             ErrorMessage = "Your program takes too long. It runs out of the allowed CPU time 10000ms. It may have an infinite loop or the expected input for the program is not provided or provided incorrectly.";
@@ -697,6 +716,18 @@ public class JavaExercises implements Serializable {
         return htmlStr;
         
     }
+
+    public String GenerateHTMLFromStringBuffer(String[] strB){
+        
+        String htmlStr = "<span><pre>";
+        for(String s: strB){
+            htmlStr += s + "<br />";
+        }
+        htmlStr += "</pre></span>";
+        
+        return htmlStr;
+        
+    }
     
     public void automaticCheck() throws IOException{
         
@@ -718,8 +749,6 @@ public class JavaExercises implements Serializable {
         else{
         
             acInput                     = output.getExampleInputString();
-            expectedOutputString        = GrabFileContents(output.getExampleOutputFile()).toString();
-            yourOutputString            = GenerateHTMLFromStringBuffer(output.getExampleOutputString());
 
             String str = GrabFileContents(output.getExampleOutputFile()).toString();
 
@@ -728,33 +757,200 @@ public class JavaExercises implements Serializable {
             String[] RealOutputStringTokens = str.split("#");
             String[] MyOutputStringTokens  = output.getExampleOutputString().toString().split("\r\n");
 
+            String ExampleOutputString = "";
+            String UserOutputString = "";
+            
             //We now have two arrays with output which we need to match. We match from the example output file to the 
             //user output line by line. 
         
-            for(int i=0; i<RealOutputStringTokens.length; i++){
+            int index = 0;
+            for(int i=0; i<RealOutputStringTokens.length; i++, index++){
 
-                Pattern pattern = Pattern.compile(RealOutputStringTokens[i]);
                 boolean Found = false;
-                for(int j=0; j<MyOutputStringTokens.length; j++){
+                if(IsNumber(RealOutputStringTokens[i])){
+                    
+                    Pattern pattern = Pattern.compile(RealOutputStringTokens[i]);
+                    for(int j=0; j<MyOutputStringTokens.length; j++){
 
-                    Matcher m = pattern.matcher(MyOutputStringTokens[j]);
-                    if(m.find()){
-                        Found = true;
-                        break;
+                        Matcher m = pattern.matcher(MyOutputStringTokens[j]);
+                        if(m.find()){
+                            Found = true;
+                            break;
+                        }
+                        else{
+                            //DrillIntoProblemWithMatch(RealOutputStringTokens[i], MyOutputStringTokens[j], output);
+                            //RealOutputStringTokens[i] = output.getLocalExampleOutputString();
+                            //MyOutputStringTokens[j] = output.getLocalUserOutputString();
+                            break;
+                        }
+                    }
+                }
+                else{
+                    
+                    for(int j=i; j<MyOutputStringTokens.length; j++){
+
+                        Found = false;
+                        if(MyOutputStringTokens[j].equals(RealOutputStringTokens[i])){
+                            Found = true;
+                            break;
+                        }
+                        else{
+                            DrillIntoProblemWithMatch(RealOutputStringTokens[i], MyOutputStringTokens[j], output);
+                            RealOutputStringTokens[i] = output.getLocalExampleOutputString();
+                            MyOutputStringTokens[j] = output.getLocalUserOutputString();
+                            break;
+                        }                        
+                    }                    
+                }
+
+                if(i >= MyOutputStringTokens.length){
+                    if(MyOutputStringTokens.length < RealOutputStringTokens.length){
+                        DrillIntoProblemWithMatch(RealOutputStringTokens[i], "", output);
+                        RealOutputStringTokens[i] = output.getLocalExampleOutputString();
+                        Found = false;
                     }
                 }
 
                 if(!Found){
                     correctProgramString    = "Your program is incorrect";
                     automaticCheckAreaStyle = "display:block;";
-                    //HighlightExactProblemArea(RealOutputStringTokens[i], )
+                    inputOutputBoxes        = "display:block;";
+                    expectedOutputString    = GenerateHTMLFromStringBuffer(RealOutputStringTokens);
+                    yourOutputString        = GenerateHTMLFromStringBuffer(MyOutputStringTokens);
                     return;
                 }
             }
-        
+
+            if(index >= RealOutputStringTokens.length){
+                if(MyOutputStringTokens.length > RealOutputStringTokens.length){
+                    DrillIntoProblemWithMatch("", MyOutputStringTokens[index], output);
+                    MyOutputStringTokens[index] = output.getLocalUserOutputString();
+                    correctProgramString    = "Your program is incorrect";
+                    automaticCheckAreaStyle = "display:block;";
+                    inputOutputBoxes        = "display:block;";
+                    expectedOutputString    = GenerateHTMLFromStringBuffer(RealOutputStringTokens);
+                    yourOutputString        = GenerateHTMLFromStringBuffer(MyOutputStringTokens);
+                    return;
+                }
+            }
+            
             correctProgramString        = "Your program is correct";
-            automaticCheckAreaStyle     = "display:none;";
+            automaticCheckAreaStyle     = "display:block;";
+            inputOutputBoxes            = "display:none;";
+            expectedOutputString    = GenerateHTMLFromStringBuffer(RealOutputStringTokens);
+            yourOutputString        = GenerateHTMLFromStringBuffer(MyOutputStringTokens);            
         }
+    }
+    
+    public void DrillIntoProblemWithMatch(String ExpectedOutput, String UserOutput, Output output) throws IOException{
+        
+        String NewExampleOutputString = "";
+        String NewUserOutputString = "";
+        
+        if(IsNumber(ExpectedOutput)){
+            
+            if(UserOutput.length()>0){
+                NewExampleOutputString = NewExampleOutputString.concat("<span style=\"background-color:red;\">"+ExpectedOutput.substring(0, 1)+"</span>");
+                NewExampleOutputString = NewExampleOutputString.concat(ExpectedOutput.substring(1, ExpectedOutput.length()));
+                
+                NewUserOutputString = NewUserOutputString.concat("<span style=\"background-color:red;\">"+UserOutput.substring(0, 1)+"</span>");
+                NewUserOutputString = NewUserOutputString.concat(UserOutput.substring(1, UserOutput.length()));
+            }
+            else{
+                NewExampleOutputString = NewExampleOutputString.concat("<span style=\"background-color:red;\">"+ExpectedOutput.substring(0, 1)+"</span>");
+                NewExampleOutputString = NewExampleOutputString.concat(ExpectedOutput.substring(1, ExpectedOutput.length()));                
+            }
+        }
+        else{
+            
+            if(UserOutput.isEmpty()){
+                //this means that we are comparing an empty string to a expected string. Therefore highlight the first character of the expected 
+                //string in this case. 
+                
+                NewExampleOutputString = NewExampleOutputString.concat("<span style=\"background-color:red;\">"+ExpectedOutput.substring(0, 1)+"</span>");
+                NewExampleOutputString = NewExampleOutputString.concat(ExpectedOutput.substring(1, ExpectedOutput.length()));                                
+            }
+            else if(ExpectedOutput.isEmpty()){
+                //This means that we are comparing an empty string from expected to a string from user. Threfore highlight the first character of
+                //the user string in this case.
+                
+                NewUserOutputString = NewUserOutputString.concat("<span style=\"background-color:red;\">"+UserOutput.substring(0, 1)+"</span>");
+                NewUserOutputString = NewUserOutputString.concat(UserOutput.substring(1, UserOutput.length()));                                
+            }
+            else{
+                //Both cases have a string to compare, so we need to drill into each string and find where the error lies. 
+                
+                int index = -1;
+                for(int i=0; i<ExpectedOutput.length() && i < UserOutput.length(); i++){
+
+                    if(ExpectedOutput.charAt(i) != UserOutput.charAt(i)){
+                        index = i;
+                        break;
+                    }
+                }
+            
+                //We have reached the end of a string without error however if there is more or less to the useroutput result then we need
+                //to express an error. This can be done by highlighting the length of the smallest string of either the user or expected output
+
+                if(index == -1){
+
+                    index = (ExpectedOutput.length() > UserOutput.length()) ? UserOutput.length() : ExpectedOutput.length();
+
+                    //Now highlight this character. Get the string before the character
+                    NewExampleOutputString = NewExampleOutputString.concat(ExpectedOutput.substring(0, index));
+                    NewUserOutputString = NewUserOutputString.concat(UserOutput.substring(0, index));
+
+                    //Get the Character in question from the index.
+                    if(UserOutput.length() < ExpectedOutput.length()){
+                        NewUserOutputString = NewUserOutputString.concat("<span style=\"background-color:red;\"> </span>");
+                        NewExampleOutputString = NewExampleOutputString.concat("<span style=\"background-color:red;\">"+ExpectedOutput.charAt(index)+"</span>");
+
+                        if(index+1 < ExpectedOutput.length())
+                            NewExampleOutputString = NewExampleOutputString.concat(ExpectedOutput.substring(index+1, ExpectedOutput.length()));
+                    }
+                    else if(UserOutput.length() > ExpectedOutput.length()){
+                        NewUserOutputString = NewUserOutputString.concat("<span style=\"background-color:red;\">"+UserOutput.charAt(index)+"</span>");
+                        NewExampleOutputString = NewExampleOutputString.concat("<span style=\"background-color:red;\"> </span>");
+
+                        if(index+1 < UserOutput.length())
+                            NewUserOutputString = NewUserOutputString.concat(UserOutput.substring(index+1, UserOutput.length()));
+                    }
+                }
+                else if(index == 0){
+                    //This means the very first character is in error. So we highlight the very first character in the string. 
+                    NewUserOutputString = NewUserOutputString.concat("<span style=\"background-color:red;\">"+UserOutput.substring(index, index+1)+"</span>");
+                    NewExampleOutputString = NewExampleOutputString.concat("<span style=\"background-color:red;\">"+ExpectedOutput.substring(index, index+1)+"</span>");
+
+                    //Then we concat the rest of the string. 
+                    NewUserOutputString = NewUserOutputString.concat(UserOutput.substring(index+1, UserOutput.length()));
+                    NewExampleOutputString = NewExampleOutputString.concat(ExpectedOutput.substring(index+1, ExpectedOutput.length()));
+                }
+                else{
+                    //This means the index is not the first character nor the last, therefore we can highlight normally. 
+                    NewExampleOutputString = NewExampleOutputString.concat(ExpectedOutput.substring(0, index));
+                    NewUserOutputString = NewUserOutputString.concat(UserOutput.substring(0, index));
+
+                    NewUserOutputString = NewUserOutputString.concat("<span style=\"background-color:red;\">"+UserOutput.substring(index, index+1)+"</span>");
+                    NewUserOutputString = NewUserOutputString.concat(UserOutput.substring(index+1, UserOutput.length()));
+
+                    NewExampleOutputString = NewExampleOutputString.concat("<span style=\"background-color:red;\">"+ExpectedOutput.substring(index, index+1)+"</span>");
+                    NewExampleOutputString = NewExampleOutputString.concat(ExpectedOutput.substring(index+1, ExpectedOutput.length()));
+                }
+            } 
+        }
+        
+        output.setLocalExampleOutputString(NewExampleOutputString);
+        output.setLocalUserOutputString(NewUserOutputString);
+    }
+    
+    public boolean IsNumber(String value){
+        
+        try {
+            int num = Integer.parseInt(value);
+            return true;
+        } catch(NumberFormatException ex) {
+            return false;
+        }        
     }
     
     public String WriteToFile(String Path, String Data, boolean DestroyTextOnExit){
