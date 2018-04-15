@@ -381,6 +381,7 @@ public class JavaExercises implements Serializable {
                
                 if(text.equals("This exercise can be compiled and submitted, but cannot be run and automatically graded.")){
                     CodeReturn = "/* This exercise cannot be graded automatically becuase it may use random\n numbers, file input/output, or graphics. */";
+                    automaticCheckButtonStyle = "display:none;";
                 }
                 else{
                     CodeReturn = "/*Paste your "+ExerciseSelected+" here and click Automatic Check.\n" +
@@ -389,6 +390,7 @@ public class JavaExercises implements Serializable {
                             "If you get a java.util.InputMismatchException error, check if\n" +
                             "your code used input.readInt(), but it should be input.readDouble().\n" +
                             "For integers, use int unless it is explicitly stated as long. */";
+                    automaticCheckButtonStyle = "display:inline-block;";
                 }
             }
         } catch (FileNotFoundException e){
@@ -764,11 +766,14 @@ public class JavaExercises implements Serializable {
             //user output line by line. 
         
             int index = 0;
+            boolean IntegerOnly = false;
+            
             for(int i=0; i<RealOutputStringTokens.length; i++, index++){
 
                 boolean Found = false;
-                if(IsNumber(RealOutputStringTokens[i])){
+                if(IsNumber(RealOutputStringTokens[i], false)){
                     
+                    IntegerOnly = true;
                     Pattern pattern = Pattern.compile(RealOutputStringTokens[i]);
                     for(int j=0; j<MyOutputStringTokens.length; j++){
 
@@ -777,16 +782,11 @@ public class JavaExercises implements Serializable {
                             Found = true;
                             break;
                         }
-                        else{
-                            //DrillIntoProblemWithMatch(RealOutputStringTokens[i], MyOutputStringTokens[j], output);
-                            //RealOutputStringTokens[i] = output.getLocalExampleOutputString();
-                            //MyOutputStringTokens[j] = output.getLocalUserOutputString();
-                            break;
-                        }
                     }
                 }
                 else{
                     
+                    IntegerOnly = false;
                     for(int j=i; j<MyOutputStringTokens.length; j++){
 
                         Found = false;
@@ -821,7 +821,7 @@ public class JavaExercises implements Serializable {
                 }
             }
 
-            if(index >= RealOutputStringTokens.length){
+            if(index >= RealOutputStringTokens.length && !IntegerOnly){
                 if(MyOutputStringTokens.length > RealOutputStringTokens.length){
                     DrillIntoProblemWithMatch("", MyOutputStringTokens[index], output);
                     MyOutputStringTokens[index] = output.getLocalUserOutputString();
@@ -847,7 +847,7 @@ public class JavaExercises implements Serializable {
         String NewExampleOutputString = "";
         String NewUserOutputString = "";
         
-        if(IsNumber(ExpectedOutput)){
+        if(IsNumber(ExpectedOutput, false)){
             
             if(UserOutput.length()>0){
                 NewExampleOutputString = NewExampleOutputString.concat("<span style=\"background-color:red;\">"+ExpectedOutput.substring(0, 1)+"</span>");
@@ -943,10 +943,24 @@ public class JavaExercises implements Serializable {
         output.setLocalUserOutputString(NewUserOutputString);
     }
     
-    public boolean IsNumber(String value){
+    public boolean IsNumber(String value, boolean IntegerOnly){
         
         try {
             int num = Integer.parseInt(value);
+            return true;
+        } catch(NumberFormatException ex) {
+            
+            if(IntegerOnly)
+                return false;
+            else
+                return IsFloat(value);
+        }        
+    }
+
+    public boolean IsFloat(String value){
+        
+        try {
+            float num = Float.parseFloat(value);
             return true;
         } catch(NumberFormatException ex) {
             return false;
