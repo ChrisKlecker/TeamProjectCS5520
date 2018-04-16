@@ -364,7 +364,7 @@ public class JavaExercises implements Serializable {
         correctProgramStyle         = "display:none;";
         inputOutputBoxes            = "display:none;";
         CodeString=(GetCodeForExercise());
-        input=(GetInputFromFiles());
+        input=(GetInputFromFiles()).replace("\r\n", " ");
    }
 
     public String GetCodeForExercise() throws IOException {
@@ -433,6 +433,7 @@ public class JavaExercises implements Serializable {
             while(scan.hasNext()){
 
                 sb.append(scan.nextLine());
+                sb.append(System.lineSeparator());
             }
             return sb.toString();
         }
@@ -640,10 +641,12 @@ public class JavaExercises implements Serializable {
             ErrorMessage = (GenerateHTMLFromText(new StringBuffer(ErrorMessage))).toString();
         }
         
+
         output.setErrorString(ErrorMessage);
         output.setOutputString(OutputMessage.toString());
         output.setHTMLOutputString(GenerateHTMLFromText(OutputMessage).toString());
         output.setExampleOutputString(OutputMessage);
+        //output.setExampleOutputString(new StringBuffer(EchoPrint(output.getExampleOutputString().toString(), GrabFileContents(output.getExampleInputFile()).toString().split(" "), CodeString)));
         
         runp.destroy();
 
@@ -663,6 +666,7 @@ public class JavaExercises implements Serializable {
             output.setOutputString(OutputMessage.toString());
             output.setHTMLOutputString(GenerateHTMLFromText(OutputMessage).toString());
             output.setUserOutputString(OutputMessage);
+            //output.setUserOutputString(new StringBuffer(EchoPrint(output.getUserOutputString().toString(), GrabFileContents(output.getUserInputFile()).toString().split(" "), CodeString)));
         }
     }
         
@@ -749,7 +753,7 @@ public class JavaExercises implements Serializable {
             OutputResultClass   = "outputresult";
         }
         else{
-        
+                    
             acInput                     = output.getExampleInputString();
 
             String str = GrabFileContents(output.getExampleOutputFile()).toString();
@@ -758,9 +762,6 @@ public class JavaExercises implements Serializable {
             //Take output strings from our example and split them into separate lines based on the \r\n characters. 
             String[] RealOutputStringTokens = str.split("#");
             String[] MyOutputStringTokens  = output.getExampleOutputString().toString().split("\r\n");
-
-            String ExampleOutputString = "";
-            String UserOutputString = "";
             
             //We now have two arrays with output which we need to match. We match from the example output file to the 
             //user output line by line. 
@@ -987,4 +988,63 @@ public class JavaExercises implements Serializable {
         
         return JavaFile.getAbsolutePath();
     }   
+    
+    public String EchoPrint(String FullOutputString, String[] InputValues, String FullCodeString){
+        
+        //First get the scanner variable name. 
+        String ScannerVariable = "";
+        if(FullCodeString.contains("Scanner")){
+            String str = FullCodeString.split("Scanner")[1];
+            ScannerVariable = str.split("=")[0];
+        }
+        
+        ScannerVariable = ScannerVariable.trim();
+        
+        if(ScannerVariable.isEmpty())
+            return FullOutputString;
+        
+        //Search through the code starting at index = 0 and get the first system.out.print and get the first input. (if that is the name of the scanner variable
+        int Index = 0;
+        int FullOutputStringIndex = 0;
+        
+        for(int j=0; j < InputValues.length; j++){
+            
+            for(int i=Index; i < FullCodeString.length(); i++){
+
+                int SystemIndex = FullCodeString.indexOf("System.out.print", i);
+                int ScannerIndex = FullCodeString.indexOf(ScannerVariable+".");
+                
+                if( ScannerIndex < SystemIndex){
+                    
+                    if(FullCodeString.length() < Index)
+                        FullOutputString = FullOutputString.substring(0, FullOutputString.length()) + InputValues[j];
+                    else
+                        FullOutputString = FullOutputString.substring(0, FullOutputStringIndex) + " " + InputValues[j] + " " + FullOutputString.substring(FullOutputStringIndex, FullOutputString.length());
+                
+                    break;
+                }
+                else{
+                    
+                    int NewSystemIndex = SystemIndex;
+                    while(ScannerIndex > NewSystemIndex){
+                        NewSystemIndex = FullCodeString.indexOf("System.out.print", NewSystemIndex);
+                        NewSystemIndex = FullCodeString.indexOf(");", NewSystemIndex)+2;
+                    }
+                    if(ScannerIndex < NewSystemIndex){
+                                            
+                        int LeftParen = FullCodeString.indexOf("(\"", SystemIndex);
+                        int RightParen = FullCodeString.indexOf(");", LeftParen);
+                        String Line = FullCodeString.substring(LeftParen+2, RightParen-1);
+
+                        FullOutputStringIndex = FullOutputString.indexOf(Line) + Line.length() + InputValues[j].length() + 1;
+                        FullOutputString = FullOutputString.replace(Line, Line.concat(InputValues[j]+" "));
+                        Index = RightParen;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return FullOutputString;
+    }
 }
