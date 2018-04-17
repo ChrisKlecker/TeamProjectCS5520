@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.MatchResult;
 
 /**
  *
@@ -654,14 +655,14 @@ public class JavaExercises implements Serializable {
             
             runpb.redirectInput(Redirect.from(new File(output.getUserInputFile())));
             runp = RunProcessInThread(runpb, output); 
-            ErrorMessage            = GenerateHTMLFromText(ReturnMessage("java", runp.getErrorStream())).toString();
+            ErrorMessage            = GenerateHTMLFromText(ReturnMessage("java", runp.getErrorStream(), null)).toString();
 
             if(ErrorMessage.isEmpty() && output.isIsInfiniteLoop()){
                 ErrorMessage = "Your program takes too long. It runs out of the allowed CPU time 10000ms. It may have an infinite loop or the expected input for the program is not provided or provided incorrectly.";
                 ErrorMessage = (GenerateHTMLFromText(new StringBuffer(ErrorMessage))).toString();
             }
 
-            OutputMessage           = ReturnMessage("java", runp.getInputStream());
+            OutputMessage           = ReturnMessage("java", runp.getInputStream(), GrabFileContents(output.getUserInputFile()).toString().split(" "));
             output.setErrorString(ErrorMessage);
             output.setOutputString(OutputMessage.toString());
             output.setHTMLOutputString(GenerateHTMLFromText(OutputMessage).toString());
@@ -676,12 +677,121 @@ public class JavaExercises implements Serializable {
         if(I != null){
             BufferedReader in = new BufferedReader(new InputStreamReader(I));
             for (String line; (line = in.readLine()) != null; ){
+
                 sb.append(line);
                 sb.append(System.lineSeparator());
             }
             in.close();
         }
         return sb;
+    }
+
+    public StringBuffer ReturnMessage(String str, InputStream I, String[] InputValues) throws IOException{
+        
+        StringBuffer sb = new StringBuffer();
+        if(I != null){
+            int SystemOutIndex = 0;
+            int InputValueIndex = 0;
+            BufferedReader in = new BufferedReader(new InputStreamReader(I));
+            for (String line; (line = in.readLine()) != null; ){
+
+                if(InputValues != null && InputValueIndex < InputValues.length){
+                    int flag = DoWeNeedToAddInputValueHere(SystemOutIndex, InputValueIndex);
+                    if(flag == 0){
+                        sb.append(InputValues[InputValueIndex++]);
+                        sb.append(System.lineSeparator());
+                        sb.append(line);
+                        sb.append(System.lineSeparator());
+                    }
+                    else if(flag == 1){
+                        sb.append(line);
+                        sb.append(System.lineSeparator());
+                        sb.append(InputValues[InputValueIndex++]);
+                        sb.append(System.lineSeparator());
+                    }
+                    else{
+                        InputValues = null;
+                        sb.append(line);
+                        sb.append(System.lineSeparator());
+                    }
+                    
+                    SystemOutIndex++;
+                }
+                else{
+
+                    sb.append(line);
+                    sb.append(System.lineSeparator());
+                }
+            }
+            in.close();
+        }
+        return sb;
+    }
+    
+    public int DoWeNeedToAddInputValueHere(int SystemOutIndex, int InputValueIndex){
+        
+        /**
+         * We know we need to return true if we find a scanner input after the system.out.print we have just printed and 
+         * either we come to the end of file or find another system.out.print. 
+         */
+        
+        int i = 0;
+        ArrayList<Integer> SystemOutIndecies = new ArrayList<>();
+        ArrayList<Integer> ScannerIndecies = new ArrayList<>();
+        ArrayList<String> ScannerVariable = new ArrayList<>();
+        
+        //Find all system.out.print lines in the code
+        Pattern pattern = Pattern.compile("System.out.print[ln]*");
+        Matcher m = pattern.matcher(CodeString);
+        while(m.find()){
+            SystemOutIndecies.add(m.end());
+        }
+        
+        Pattern patternScanner = Pattern.compile("Scanner ([a-zA-Z_][a-zA-Z0-9_]*)[\\s]*.*Scanner\\(System.in\\);");
+        Matcher mscanner = patternScanner.matcher(CodeString);
+        if(mscanner.find()){
+            for(int j=0; j<mscanner.groupCount(); j++){
+                ScannerVariable.add(mscanner.group(j+1));
+            }
+        }
+
+        //If there are no scanner variables then we are done. 
+        if(ScannerVariable.isEmpty())
+            return -1;
+
+        //We need to create a pattern to find all of our scanner input calls. These get stored into an array created
+        //from pattern matching. This array is stored in m.group();
+
+        String PatternForScannerVariables = "";
+        for(int j=0; j<ScannerVariable.size(); j++){
+            if(j>0)
+                PatternForScannerVariables += "|";
+
+            PatternForScannerVariables += "(" + ScannerVariable.get(j) + ")\\.";
+        }        
+
+        //Get all input matches and start index locations
+        Pattern patternForScanner = Pattern.compile(PatternForScannerVariables);
+        Matcher ScannersMatch = patternForScanner.matcher(CodeString);
+                
+        while(ScannersMatch.find())
+            ScannerIndecies.add(ScannersMatch.start());
+            
+        int o = SystemOutIndecies.get(SystemOutIndex);
+        
+        if(ScannerIndecies.size() > InputValueIndex){
+        
+            int p = ScannerIndecies.get(InputValueIndex);
+        
+            if(p < o) //Input Scanner is first
+                return 0;
+            else if(p > 0) //System print is first
+                return 1;
+            else
+                return -1;
+        }
+        else        
+            return -1;
     }
     
     public StringBuffer GenerateHTMLFromText(StringBuffer Text){
@@ -988,63 +1098,4 @@ public class JavaExercises implements Serializable {
         
         return JavaFile.getAbsolutePath();
     }   
-    
-    public String EchoPrint(String FullOutputString, String[] InputValues, String FullCodeString){
-        
-        //First get the scanner variable name. 
-        String ScannerVariable = "";
-        if(FullCodeString.contains("Scanner")){
-            String str = FullCodeString.split("Scanner")[1];
-            ScannerVariable = str.split("=")[0];
-        }
-        
-        ScannerVariable = ScannerVariable.trim();
-        
-        if(ScannerVariable.isEmpty())
-            return FullOutputString;
-        
-        //Search through the code starting at index = 0 and get the first system.out.print and get the first input. (if that is the name of the scanner variable
-        int Index = 0;
-        int FullOutputStringIndex = 0;
-        
-        for(int j=0; j < InputValues.length; j++){
-            
-            for(int i=Index; i < FullCodeString.length(); i++){
-
-                int SystemIndex = FullCodeString.indexOf("System.out.print", i);
-                int ScannerIndex = FullCodeString.indexOf(ScannerVariable+".");
-                
-                if( ScannerIndex < SystemIndex){
-                    
-                    if(FullCodeString.length() < Index)
-                        FullOutputString = FullOutputString.substring(0, FullOutputString.length()) + InputValues[j];
-                    else
-                        FullOutputString = FullOutputString.substring(0, FullOutputStringIndex) + " " + InputValues[j] + " " + FullOutputString.substring(FullOutputStringIndex, FullOutputString.length());
-                
-                    break;
-                }
-                else{
-                    
-                    int NewSystemIndex = SystemIndex;
-                    while(ScannerIndex > NewSystemIndex){
-                        NewSystemIndex = FullCodeString.indexOf("System.out.print", NewSystemIndex);
-                        NewSystemIndex = FullCodeString.indexOf(");", NewSystemIndex)+2;
-                    }
-                    if(ScannerIndex < NewSystemIndex){
-                                            
-                        int LeftParen = FullCodeString.indexOf("(\"", SystemIndex);
-                        int RightParen = FullCodeString.indexOf(");", LeftParen);
-                        String Line = FullCodeString.substring(LeftParen+2, RightParen-1);
-
-                        FullOutputStringIndex = FullOutputString.indexOf(Line) + Line.length() + InputValues[j].length() + 1;
-                        FullOutputString = FullOutputString.replace(Line, Line.concat(InputValues[j]+" "));
-                        Index = RightParen;
-                        break;
-                    }
-                }
-            }
-        }
-        
-        return FullOutputString;
-    }
 }
