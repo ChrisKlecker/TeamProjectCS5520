@@ -39,6 +39,12 @@ public class JavaExercises implements Serializable {
     final static int EXECUTION_TIME_ALLOWED = 10000;
     final static int EXECUTION_TIME_INTERVAL = 100;
 
+    private final String DEFAULTPATH = "C:\\ags10e\\";
+    
+    public String getDefaultPath(){
+        return DEFAULTPATH;
+    }
+    
     private ArrayList<String> Chapters;
     private ArrayList<String> Exercises;
     private ArrayList<String> AllExercises;
@@ -279,9 +285,11 @@ public class JavaExercises implements Serializable {
     }
        
     public JavaExercises() throws IOException {
-        ServletContext ctx          = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
-        String realPath             = ctx.getRealPath("/");
-        setDataFile(realPath + "ags10e\\");
+        //ServletContext ctx          = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
+        //String realPath             = ctx.getRealPath("/");
+        setDataFile(getDefaultPath());
+        
+        //setDataFile(realPath);
         
         Chapters            = new ArrayList<>();
         Exercises           = new ArrayList<>();
@@ -646,8 +654,9 @@ public class JavaExercises implements Serializable {
         output.setErrorString(ErrorMessage);
         output.setOutputString(OutputMessage.toString());
         output.setHTMLOutputString(GenerateHTMLFromText(OutputMessage).toString());
-        output.setExampleOutputString(OutputMessage);
-        //output.setExampleOutputString(new StringBuffer(EchoPrint(output.getExampleOutputString().toString(), GrabFileContents(output.getExampleInputFile()).toString().split(" "), CodeString)));
+        output.setExampleOutputString(OutputMessage);   
+        output.setUserOutputString(OutputMessage);
+                //output.setExampleOutputString(new StringBuffer(EchoPrint(output.getExampleOutputString().toString(), GrabFileContents(output.getExampleInputFile()).toString().split(" "), CodeString)));
         
         runp.destroy();
 
@@ -696,23 +705,25 @@ public class JavaExercises implements Serializable {
             for (String line; (line = in.readLine()) != null; ){
 
                 if(InputValues != null && InputValueIndex < InputValues.length){
-                    int flag = DoWeNeedToAddInputValueHere(SystemOutIndex, InputValueIndex);
-                    if(flag == 0){
-                        sb.append(InputValues[InputValueIndex++]);
-                        sb.append(System.lineSeparator());
-                        sb.append(line);
-                        sb.append(System.lineSeparator());
-                    }
-                    else if(flag == 1){
-                        sb.append(line);
-                        sb.append(System.lineSeparator());
-                        sb.append(InputValues[InputValueIndex++]);
-                        sb.append(System.lineSeparator());
-                    }
-                    else{
-                        InputValues = null;
-                        sb.append(line);
-                        sb.append(System.lineSeparator());
+                    
+                    while(true){
+                        
+                        int flag = DoWeNeedToAddInputValueHere(SystemOutIndex, InputValueIndex);
+                        if(flag == 0){
+                            sb.append(InputValues[InputValueIndex++]);
+                            sb.append(System.lineSeparator());
+                        }
+                        else if(flag == 1){
+                            sb.append(line);
+                            sb.append(System.lineSeparator());
+                            break;
+                        }
+                        else{
+                            InputValues = null;
+                            sb.append(line);
+                            sb.append(System.lineSeparator());
+                            break;
+                        }
                     }
                     
                     SystemOutIndex++;
@@ -914,7 +925,7 @@ public class JavaExercises implements Serializable {
                     }                    
                 }
 
-                if(i >= MyOutputStringTokens.length){
+                if(i >= MyOutputStringTokens.length && !IntegerOnly){
                     if(MyOutputStringTokens.length < RealOutputStringTokens.length){
                         DrillIntoProblemWithMatch(RealOutputStringTokens[i], "", output);
                         RealOutputStringTokens[i] = output.getLocalExampleOutputString();
@@ -923,6 +934,7 @@ public class JavaExercises implements Serializable {
                 }
 
                 if(!Found){
+                    
                     correctProgramString    = "Your program is incorrect";
                     automaticCheckAreaStyle = "display:block;";
                     inputOutputBoxes        = "display:block;";
