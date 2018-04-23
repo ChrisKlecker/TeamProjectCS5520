@@ -14,15 +14,10 @@ import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
-import java.util.Timer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.regex.MatchResult;
 
 /**
  *
@@ -40,10 +35,7 @@ public class JavaExercises implements Serializable {
     final static int EXECUTION_TIME_INTERVAL = 100;
 
     private final String DEFAULTPATH = "C:\\ags10e\\";
-    
-    public String getDefaultPath(){
-        return DEFAULTPATH;
-    }
+    public String getDefaultPath(){ return DEFAULTPATH;}
     
     private ArrayList<String> Chapters;
     private ArrayList<String> Exercises;
@@ -74,228 +66,85 @@ public class JavaExercises implements Serializable {
     private String acInput;
     private String inputOutputBoxes;
 
-    public String getInputOutputBoxes() {
-        return inputOutputBoxes;
-    }
-
-    public void setInputOutputBoxes(String inputOutputBoxes) {
-        this.inputOutputBoxes = inputOutputBoxes;
-    }
+    /**
+     * Getters and Setters
+     * @return 
+     */
+    public String getInputOutputBoxes()                                 {return inputOutputBoxes;}
+    public void setInputOutputBoxes(String inputOutputBoxes)            {this.inputOutputBoxes = inputOutputBoxes;}
+    public String getAcInput()                                          {return acInput;}
+    public void setAcInput(String acInput)                              {this.acInput = inputStyle;}
+    public String getInputStyle()                                       {return inputStyle;}
+    public void setInputStyle(String inputStyle)                        {this.inputStyle = inputStyle;}
+    public String getExpectedOutputString()                             {return expectedOutputString;}
+    public void setExpectedOutputString(String expectedOutputString)    {this.expectedOutputString = expectedOutputString;}
+    public String getYourOutputString()                                 {return yourOutputString;}
+    public void setYourOutputString(String yourOutputString)            {this.yourOutputString = yourOutputString;}
+    public String getInputFile()                                        { return inputFile;}
+    public void setInputFile(String inputFile)                          {this.inputFile = inputFile;}
+    public String getExampleInputFile()                                 { return ExampleInputFile;}
+    public void setExampleInputFile(String ExampleInputFile)            { this.ExampleInputFile = ExampleInputFile;}
+    public String getCorrectProgramStyle()                              { return correctProgramStyle;}
+    public void setCorrectProgramStyle(String correctProgramStyle)      { this.correctProgramStyle = correctProgramStyle;}
+    public String getCorrectProgramString()                             { return correctProgramString; }
+    public void setCorrectProgramString(String correctProgramString)    { this.correctProgramString = correctProgramString; }
+    public String getExpectedOutputStyle()                              {return expectedOutputStyle;}
+    public void setExpectedOutputStyle(String expectedOutputStyle)      {this.expectedOutputStyle = expectedOutputStyle;}
+    public String getYourOutputStyle()                                  {return yourOutputStyle;}
+    public void setYourOutputStyle(String yourOutputStyle)              {this.yourOutputStyle = yourOutputStyle;}
+    public String getAutomaticCheckAreaStyle()                                  { return automaticCheckAreaStyle;}
+    public void setAutomaticCheckAreaStyle(String automaticCheckAreaStyle)      {this.automaticCheckAreaStyle = automaticCheckAreaStyle;}
+    public String getAutomaticCheckButtonStyle()                                {return automaticCheckButtonStyle;}
+    public void setAutomaticCheckButtonStyle(String automaticCheckButtonStyle)  {this.automaticCheckButtonStyle = automaticCheckButtonStyle;}
+    public String getOutputString()                                     {return OutputString;}
+    public void setOutputString(String OutputString)                    {this.OutputString = OutputString;}
+    public String getShowInputWindow()                                  {return ShowInputWindow;}
+    public void setShowInputWindow(String ShowInputWindow)              {this.ShowInputWindow = ShowInputWindow;}
+    public String getInput()                                            {return input;}
+    public void setInput(String input) throws FileNotFoundException     {this.input = input;}
+    public String getRecommendClass()                                   {return RecommendClass;}
+    public void setRecommendClass(String recommendClass)                {this.RecommendClass = recommendClass;}
+    public String getOutputResultClass()                                {return OutputResultClass;}
+    public void setOutputResultClass(String OutputResultClass)          {this.OutputResultClass = OutputResultClass;}
+    public String getErrorString()                                      {return ErrorString;}
+    public void setErrorString(String ErrorString)                      {this.ErrorString = ErrorString;}
+    public String getInputString()                                      { return InputString;}
+    public void setInputString(String InputString)                      {this.InputString = InputString;}
+    public ArrayList<String> getAllExercises()                          {return AllExercises;}
+    public void setAllExercises(ArrayList<String> AllExercises)         {this.AllExercises = AllExercises;}
+    public String getComment()                                          {return Comment;}
+    public void setComment(String Comment)                              {this.Comment = Comment;}
+    public String getDataFile()                                         {return DataFile;}
+    public void setDataFile(String DataFile)                            {this.DataFile = DataFile;}
+    public String getChapterSelected()                                  {return ChapterSelected;}
+    public void setChapterSelected(String ChapterSelected) throws IOException {this.ChapterSelected = ChapterSelected; ResetExercises();}
+    public ArrayList<String> getChapters()                              {return Chapters;}
+    public void setChapters(ArrayList<String> chapters)                 {this.Chapters = chapters;}
+    public ArrayList<String> getExercises()                             {return Exercises; }
+    public void setExercises(ArrayList<String> exercises)               {this.Exercises = exercises;}
+    public String getExerciseSelected()                                 {return ExerciseSelected;}
+    public void setExerciseSelected(String ExerciseSelected)            {this.ExerciseSelected = ExerciseSelected;}
+    public String getCodeString()                                       {return CodeString;}
+    public void setCodeString(String CodeString) throws IOException     {this.CodeString = CodeString;}
     
-    public String getAcInput()                                   {return acInput;}
-    public void setAcInput(String acInput)                    {this.acInput = inputStyle;}
-    public String getInputStyle()                                   {return inputStyle;}
-    public void setInputStyle(String inputStyle)                    {this.inputStyle = inputStyle;}
-    public String getExpectedOutputString()                                   {return expectedOutputString;}
-    public void setExpectedOutputString(String expectedOutputString)                    {this.expectedOutputString = expectedOutputString;}
-    public String getYourOutputString()                                   {return yourOutputString;}
-    public void setYourOutputString(String yourOutputString)                    {this.yourOutputString = yourOutputString;}
-
-    public String getInputFile() {
-        return inputFile;
-    }
-
-    public void setInputFile(String inputFile) {
-        this.inputFile = inputFile;
-    }
-
-    public String getExampleInputFile() {
-        return ExampleInputFile;
-    }
-
-    public void setExampleInputFile(String ExampleInputFile) {
-        this.ExampleInputFile = ExampleInputFile;
-    }
-
-    public String getCorrectProgramStyle() {
-        return correctProgramStyle;
-    }
-
-    public void setCorrectProgramStyle(String correctProgramStyle) {
-        this.correctProgramStyle = correctProgramStyle;
-    }
-
-    public String getCorrectProgramString() {
-        return correctProgramString;
-    }
-
-    public void setCorrectProgramString(String correctProgramString) {
-        this.correctProgramString = correctProgramString;
-    }
-
-    public String getExpectedOutputStyle() {
-        return expectedOutputStyle;
-    }
-
-    public void setExpectedOutputStyle(String expectedOutputStyle) {
-        this.expectedOutputStyle = expectedOutputStyle;
-    }
-
-    public String getYourOutputStyle() {
-        return yourOutputStyle;
-    }
-
-    public void setYourOutputStyle(String yourOutputStyle) {
-        this.yourOutputStyle = yourOutputStyle;
-    }
-
-    public String getAutomaticCheckAreaStyle() {
-        return automaticCheckAreaStyle;
-    }
-
-    public void setAutomaticCheckAreaStyle(String automaticCheckAreaStyle) {
-        this.automaticCheckAreaStyle = automaticCheckAreaStyle;
-    }
-
-    public String getAutomaticCheckButtonStyle() {
-        return automaticCheckButtonStyle;
-    }
-
-    public void setAutomaticCheckButtonStyle(String automaticCheckButtonStyle) {
-        this.automaticCheckButtonStyle = automaticCheckButtonStyle;
-    }
-
-    public String getOutputString() {
-        return OutputString;
-    }
-
-    public void setOutputString(String OutputString) {
-        this.OutputString = OutputString;
-    }
-
-    public String getShowInputWindow() {
-        return ShowInputWindow;
-    }
-
-    public void setShowInputWindow(String ShowInputWindow) {
-        this.ShowInputWindow = ShowInputWindow;
-    }
-
-    public String getInput() {
-        return input;
-    }
-
-    public void setInput(String input) throws FileNotFoundException {
-        this.input = input;
-    }
-    
-    public String getRecommendClass() {
-        return RecommendClass;
-    }
-
-    public void setRecommendClass(String recommendClass) {
-        this.RecommendClass = recommendClass;
-    }
-
-    public String getOutputResultClass() {
-        return OutputResultClass;
-    }
-
-    public void setOutputResultClass(String OutputResultClass) {
-        this.OutputResultClass = OutputResultClass;
-    }
-
-    public String getErrorString() {
-        return ErrorString;
-    }
-
-    public void setErrorString(String ErrorString) {
-        this.ErrorString = ErrorString;
-    }
-
-    public String getInputString() {
-        return InputString;
-    }
-
-    public void setInputString(String InputString) {
-        this.InputString = InputString;
-    }
-
-    public ArrayList<String> getAllExercises() {
-        return AllExercises;
-    }
-
-    public void setAllExercises(ArrayList<String> AllExercises) {
-        this.AllExercises = AllExercises;
-    }
-
-    public String getComment() {
-        return Comment;
-    }
-
-    public void setComment(String Comment) {
-        this.Comment = Comment;
-    }
-
-    public String getDataFile() {
-        return DataFile;
-    }
-
-    public void setDataFile(String DataFile) {
-        this.DataFile = DataFile;
-    }
-    
-    public String getChapterSelected() {
-        
-        return ChapterSelected;
-    }
-
-    public void setChapterSelected(String ChapterSelected) {
-        
-        this.ChapterSelected = ChapterSelected;
-        
-        ResetExercises();
-    }
-
-    public ArrayList<String> getChapters(){
-
-        return Chapters;
-    }
-    public void setChapters(ArrayList<String> chapters){
-
-        this.Chapters = chapters;
-    }
-    
-    public ArrayList<String> getExercises(){
-        
-        return Exercises;
-    }
-    
-    public void setExercises(ArrayList<String> exercises){
-        
-        this.Exercises = exercises;
-    }
-
-    public String getExerciseSelected() {
-        
-        return ExerciseSelected;
-    }
-
-    public void setExerciseSelected(String ExerciseSelected) {
-        
-        this.ExerciseSelected = ExerciseSelected;
-    }
-
-    public String getCodeString() {
-        return CodeString;
-    }
-
-    public void setCodeString(String CodeString) throws IOException {
-        this.CodeString = CodeString;
-    }
-       
+    /**
+     * Faces Constructor
+     * @throws IOException 
+     */
     public JavaExercises() throws IOException {
         //ServletContext ctx          = (ServletContext) FacesContext.getCurrentInstance().getExternalContext().getContext();
         //String realPath             = ctx.getRealPath("/");
+        //setDataFile(realPath);
+
+        //Because we have a hard coded path we can just use a final variable here.
         setDataFile(getDefaultPath());
         
-        //setDataFile(realPath);
-        
-        Chapters            = new ArrayList<>();
-        Exercises           = new ArrayList<>();
-        AllExercises        = new ArrayList<>();
-        ExerciseSelected    = "Exercise01_01";
-        ChapterSelected     = "Chapter 1";
+        //Initialize all variables. 
+        Chapters            = new ArrayList<>();    //Array of all chapters
+        Exercises           = new ArrayList<>();    //Array of all exercises for selected chapter
+        AllExercises        = new ArrayList<>();    //Array of all exercises
+        ExerciseSelected    = "Exercise01_01";      //Which exercise has been selected. 
+        ChapterSelected     = "Chapter 1";          //Which chapter is selected
         CodeString          = "/*Paste your "+ExerciseSelected+" here and click Automatic Check.\n" +
                               "For all programming projects, the numbers should be double\n" +
                               "unless it is explicitly stated as integer.\n" +
@@ -303,22 +152,29 @@ public class JavaExercises implements Serializable {
                               "your code used input.readInt(), but it should be input.readDouble().\n" +
                               "For integers, use int unless it is explicitly stated as long. */";
         
-        ErrorString         = "";
-        InputString         = "";
-        RecommendClass      = "recommend";
-        ExampleInputFile    = "";
-        OutputResultClass   = "outputresultHidden";
-        ShowInputWindow             = "display:none;";
-        inputStyle                  = "display:block;"; //
-        expectedOutputStyle         = "display:block;";
-        yourOutputStyle             = "display:block;";
-        automaticCheckAreaStyle     = "display:none;";
-        correctProgramString        = "";
-        correctProgramStyle         = "display:none;";
-        inputOutputBoxes            = "display:none;";
-        Initialize();
+        ErrorString         = "";                   //What error string do we need to report?
+        InputString         = "";                   //What is our input string. If the user changes the input this variable gets changed
+        RecommendClass      = "recommend";          //This is the text shown on the bottom when the program starts
+        ExampleInputFile    = "";                   //This is the input file for the example, not the user input
+        OutputResultClass   = "outputresultHidden"; //Style sheet for the output display
+        ShowInputWindow             = "display:none;";  //Style sheet for the input display
+        inputStyle                  = "display:block;"; //style sheet for the input box for automatic check displays
+        expectedOutputStyle         = "display:block;"; //Style sheet for the expected output for automatic check displays
+        yourOutputStyle             = "display:block;"; //Style sheet for the user output for automatic check displays
+        automaticCheckAreaStyle     = "display:none;";  //Style sheet for the whole automatic check display area
+        correctProgramString        = "";               //this is the text if the program is correct or incorrect
+        correctProgramStyle         = "display:none;";  //style sheet for the correct program text
+        inputOutputBoxes            = "display:none;";  //the style sheet for the inputoutput boxes
+        
+        Initialize();                                   //Let's get this program started. 
     }
 
+    /**
+     * Initializes the Chapter selection box and the exercises selection box based on the initial starting chapter. 
+     * 
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
     public void Initialize() throws FileNotFoundException, IOException{
         
         File f                  = new File(getDataFile()+"exercisedescription");
@@ -341,23 +197,34 @@ public class JavaExercises implements Serializable {
         ResetExercises();
     }
     
-    public void ResetExercises(){
+    /**
+     * This is called when the user selects a new chapter. This iterates through all exercises and picks out the ones related to the selected chapter. 
+     * 
+     * @throws IOException 
+     */
+    public void ResetExercises() throws IOException{
         
         Exercises = new ArrayList<>();
-        
         for (int i=0; i<AllExercises.size(); i++){
             
             String FileName = AllExercises.get(i);
             String[] str    = FileName.split("_")[0].split("Exercise");
             if(str.length>0){
                 int chapterNo = Integer.parseInt(str[1]);
-
-                if(Integer.parseInt(ChapterSelected.split("Chapter")[1].trim()) == chapterNo)
+                if(Integer.parseInt(ChapterSelected.split("Chapter")[1].trim()) == chapterNo){
                     Exercises.add(FileName);
+                }
             }
         }
     }
     
+    /**
+     * This is called when the user selects "Set Exercise". It resets many of our variables like in initialize. 
+     * However it will now initialize the codeString and display a small help for the user and it will also get the
+     * input information from the default input file selected for the exercise. 
+     * 
+     * @throws IOException 
+     */
     public void SetExerciseInformation() throws IOException{
           
         ExampleInputFile    = "";
@@ -376,6 +243,12 @@ public class JavaExercises implements Serializable {
         input=(GetInputFromFiles()).replace("\r\n", " ");
    }
 
+    /**
+     * Returns a string to display in the code block. If the exercise cannot be automatically checked then it simply hides that button. 
+     * 
+     * @return
+     * @throws IOException 
+     */
     public String GetCodeForExercise() throws IOException {
         
         String CodeReturn = "";
@@ -409,6 +282,13 @@ public class JavaExercises implements Serializable {
         return CodeReturn;
     }    
 
+    /**
+     * This will look inside our ags10e folder and start grabbing all input files related to the exercise selected. If there is more than one we
+     * will randomly select an input file. If input file is found he hide the input window. 
+     * 
+     * @return
+     * @throws FileNotFoundException 
+     */
     public String GetInputFromFiles() throws FileNotFoundException{
         
         File f                  = new File(getDataFile() + "\\gradeexercise");
@@ -432,7 +312,7 @@ public class JavaExercises implements Serializable {
         if(FoundFiles.size()>0){
     
             //Get Random Input File
-            setShowInputWindow("display:block;");
+            setShowInputWindow("display:block; border-radius: 3px;");
 
             int randomNum       = ThreadLocalRandom.current().nextInt(0, FoundFiles.size());
             ExampleInputFile    = FoundFiles.get(randomNum);    
@@ -448,11 +328,19 @@ public class JavaExercises implements Serializable {
         }
         else{
             ExampleInputFile    = "";
-            setShowInputWindow("display:none;");
+            setShowInputWindow("display:none;border-radius: 3px;");
             return "";
         }    
     }
 
+    /**
+     * Universal method to grab the contents of a file from the path passed as a parameter. 
+     * 
+     * @param Path
+     * @return
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
     public StringBuffer GrabFileContents(String Path) throws FileNotFoundException, IOException{
         
         StringBuffer sb = new StringBuffer();
@@ -468,6 +356,7 @@ public class JavaExercises implements Serializable {
         return sb;
     }
     
+    //This is called when the user clicks the compile/run button
     public void CallCompileRun() throws IOException{
         
         Output output = compileRun(false);
@@ -476,8 +365,16 @@ public class JavaExercises implements Serializable {
         inputOutputBoxes            = "display:none;";
     }
     
+    /** 
+     * Will be called if the user even clicks on automatic check as we need to compile the program and return possible errors. 
+     * 
+     * @param AutomaticRun
+     * @return
+     * @throws IOException 
+     */
     public Output compileRun(boolean AutomaticRun) throws IOException{
         
+        //If this is not an automatic run then we can hide the automatic run stuff and display the compile/run stuff. 
         if(!AutomaticRun){
             automaticCheckAreaStyle = "display:none";
             OutputResultClass   = "outputresult";
@@ -543,7 +440,8 @@ public class JavaExercises implements Serializable {
     
     public Output CompileJavaProgram(String FileName) throws IOException{
     
-        String JavaFilePath = WriteToFile(FileName.concat(".java"), getCodeString(), true);
+        String newCodeString    = getCodeString().replace("System.out.print(", "System.out.println(");
+        String JavaFilePath     = WriteToFile(FileName.concat(".java"), newCodeString, true);
         
         if(!JavaFilePath.isEmpty()){
     

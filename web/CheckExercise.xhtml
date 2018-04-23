@@ -22,10 +22,12 @@
                 color:white;
                 border-bottom: 2px solid grey;
                 border-right: 2px solid grey;
+                border-radius: 3px;
                 font-weight: bold;
                 text-align:center;
                 padding: 3px;
                 margin: 10px;
+                font-size:1.5em;
             }
             #nav{
                 text-align:center;
@@ -35,12 +37,14 @@
                 font-weight: bold;
                 font-family: Verdana, Helvetica, sans-serif;
                 font-size:1.5em;
+                border-radius: 3px;
             }
             #main{
                 border: 2px solid #f6912f;
                 height: 300px;
                 margin:10px;
                 overflow:hidden;
+                border-radius: 3px;
             }
             #editor {
                 height:300px;
@@ -48,13 +52,16 @@
                 font-size:1.5em;
                 border: 2px solid #f6912f;
                 margin: 10px;
+                border-radius: 3px;
             }
             #mainbuttons{
                 margin:10px;
                 font-size:1.5em;
+                border-radius: 3px;
             }
             .select{
                 font-size:1.3em;
+                border-radius: 3px;
             }
             
             .buttons{
@@ -67,11 +74,13 @@
                 font-family: Verdana, Helvetica, sans-serif;
                 font-weight:normal;
                 font-size:.9em;
+                border-radius: 3px;
                 
             }
             #output{
                 text-align:left;
                 font-size:1.5em;
+                border-radius: 3px;
             }
             
             .recommend{
@@ -98,7 +107,8 @@
                 margin:10px;
                 font-family:"courier new", courier, monospace;
                 border:1px solid #357ebd;
-                overflow:scroll;                
+                overflow:scroll;   
+                border-radius:3px;
             }
             .outputresultHidden{
                 display:none;
@@ -110,6 +120,7 @@
             #inputDiv{
                 font-size:1.3em;
                 margin: 1px 10px;
+                border-radius: 3px;
             }
                        
             .automaticChecktitles{
@@ -160,7 +171,7 @@
                     <f:selectItems value="#{javaExercises.exercises}"/>
                 </h:selectOneMenu>
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <h:commandButton value="Set Exercise" class="buttons" action = "#{javaExercises.SetExerciseInformation()}" />
+                <h:commandButton id="setExercises" value="Set Exercise" class="buttons" action = "#{javaExercises.SetExerciseInformation()}" />
             </div>
             
             <div id="editor">#{javaExercises.codeString}</div>
@@ -195,7 +206,7 @@
                 </div>
 
                 <div class="#{javaExercises.outputResultClass}">
-                    <h:outputText value="#{javaExercises.errorString}" escape="false"/>
+                    <h:outputText value="#{javaExercises.errorString}" escape="false" />
                 </div>
             </div>
             <p />
